@@ -279,10 +279,11 @@ extern int provision_epid( const char *const epidConfigFile);
 #define OPCODE_IA2CHAABI_ACD_PROV             5
 */
 
-#define OPCODE_IA2CHAABI_ACD_READ             5
-#define OPCODE_IA2CHAABI_ACD_WRITE            6
-#define OPCODE_IA2CHAABI_ACD_LOCK             7
-#define OPCODE_IA2CHAABI_ACD_PROV             8
+#define OPCODE_IA2CHAABI_ACD_READ             1
+#define OPCODE_IA2CHAABI_ACD_WRITE            2
+#define OPCODE_IA2CHAABI_OS_VRL               3
+#define OPCODE_IA2CHAABI_ACD_LOCK             4
+#define OPCODE_IA2CHAABI_ACD_PROV             5
 
 /*
  * Android Customer Data get_customer_data(), lock_customer_data(),

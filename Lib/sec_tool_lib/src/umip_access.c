@@ -35,7 +35,6 @@
 
 #define ACD_MAIN_OPCODE (9876)
 
-#define TEST_HECISHIM
 //
 // SEP message array indices for the Platform Management Database parameters.
 //
@@ -83,7 +82,8 @@ int lock_customer_data( void *ptrHandle )
         memset( cmd_data_in, 0, sizeof( cmd_data_in ) );
         memset( cmd_data_out, 0, sizeof( cmd_data_out ) );
         // Populate the parameter data structures
-        params.hdr_req.sub_opcode = bswap_32( OPCODE_IA2CHAABI_ACD_LOCK );
+        params.hdr_req.main_opcode = ACD_MAIN_OPCODE;
+        params.hdr_req.sub_opcode = OPCODE_IA2CHAABI_ACD_LOCK;
         // Link-up the parameter data structures
         INIT_FROM_HOST_PARAM_BUF( cmd_data_in[FROM_HOST_PARAM_INDEX], &params, sizeof( params ) );
         INIT_TO_HOST_PARAM_BUF( cmd_data_out[TO_HOST_PARAM_INDEX], &resp, sizeof( resp ) );
@@ -462,7 +462,9 @@ int provision_customer_data( void *ptrHandle,
 pmdb_result_t sep_pmdb_lock( void )
 {
 
-#ifndef TEST_HECISHIM
+#ifdef BAYTRAIL
+	return (PMDB_FAIL_UNSUPPORTED);
+#else
         DxUint8_t  aSendBuffer[ FAST_BUF_SIZE ], aResponseBuffer[ FAST_BUF_SIZE ];
 	DxError_t  status = DX_ERROR;
 	DxError_t  sepStatus = DX_ERROR;
@@ -609,7 +611,7 @@ pmdb_result_t sep_pmdb_lock( void )
 	//
 	// Locking the PMDB write-once area succeeded.
 	//
-#endif  //  TEST_HECISHIM
+#endif  //  BAYTRAIL
         return ( PMDB_SUCCESSFUL );
 
 }       //  sep_pmdb_lock
@@ -633,7 +635,10 @@ pmdb_result_t sep_pmdb_read( const sep_pmdb_area_t pmdbArea,
                              const uint32_t        dataSizeInBytes )
 {
 
-#ifndef TEST_HECISHIM
+#ifdef BAYTRAIL
+	return (PMDB_FAIL_UNSUPPORTED);
+#else
+
 	DxUint8_t  aSendBuffer[ FAST_BUF_SIZE ], aResponseBuffer[ FAST_BUF_SIZE ];
 	DxError_t  status = DX_ERROR;
 	DxError_t  sepStatus = DX_ERROR;
@@ -855,7 +860,7 @@ pmdb_result_t sep_pmdb_read( const sep_pmdb_area_t pmdbArea,
 	//
 	// Reading the Platform Management Database data in Chaabi succeeded.
 	//
-#endif  //  TEST_HECISHIM
+#endif  //  BAYTRAIL
 	return ( PMDB_SUCCESSFUL );
 
 }       //  sep_pmdb_read
@@ -885,7 +890,10 @@ pmdb_result_t sep_pmdb_write( const sep_pmdb_area_t pmdbArea,
                               const uint32_t        dataSizeInBytes )
 {
 
-#ifndef TEST_HECISHIM
+#ifdef BAYTRAIL
+	return (PMDB_FAIL_UNSUPPORTED);
+#else
+
 	DxUint8_t  aSendBuffer[ FAST_BUF_SIZE ], aResponseBuffer[ FAST_BUF_SIZE ];
 	DxError_t  status = DX_ERROR;
 	DxError_t  sepStatus = DX_ERROR;
@@ -1076,7 +1084,7 @@ pmdb_result_t sep_pmdb_write( const sep_pmdb_area_t pmdbArea,
 	//
 	// Reading the Platform Management Database data in Chaabi succeeded.
 	//
-#endif  //  TEST_HECISHIM
+#endif  //  BAYTRAIL
 	return ( PMDB_SUCCESSFUL );
 
 }       //  sep_pmdb_write
@@ -1093,7 +1101,10 @@ pmdb_result_t sep_pmdb_write( const sep_pmdb_area_t pmdbArea,
  */
 int sep_rpmb_provision_key(void)
 {
-#ifndef TEST_HECISHIM
+#ifdef BAYTRAIL
+	return (PMDB_FAIL_UNSUPPORTED);
+#else
+
 	DxUint8_t snd_buf[SEP_MESSAGE_MAX_SIZE], res_buf[SEP_MESSAGE_MAX_SIZE];
 	CRYSError_t crysStatus = ~CRYS_OK;
 	DxError_t sepStatus = DX_ERROR;
@@ -1169,6 +1180,6 @@ int sep_rpmb_provision_key(void)
 		       sepStatus);
 		return DX_FASTCALL_VALIDATE_FAILURE;
 	}
-#endif
+#endif	//BAYTRAIL
 	return RPMB_KEY_PROV_SUCCESS;
 }
