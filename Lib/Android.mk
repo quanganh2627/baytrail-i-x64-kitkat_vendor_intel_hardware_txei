@@ -92,7 +92,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/inc/	\
 $(LOCAL_PATH)/sec_tool_lib/inc/                           \
 $(LOCAL_PATH)/common/inc/
 
-LOCAL_MODULE := libmiscutils
+LOCAL_MODULE := libtxeimiscutils
 
 LOCAL_MODULE_TAGS := eng
 
