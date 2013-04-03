@@ -1,8 +1,8 @@
 #ifndef _TXEI_H_
 #define _TXEI_H_
 
-#define MEI_DEVICE_FILE "/dev/txei"
-#define MEI_VERSION_SYSFS_FILE "/sys/module/txei/version"
+#define MEI_DEVICE_FILE "/dev/mei"
+#define MEI_VERSION_SYSFS_FILE "/sys/module/mei/version"
 
 typedef struct guid {
 	unsigned int   data1;
@@ -248,7 +248,7 @@ typedef struct _FWU_GET_INFO_MSG_REPLY
 void mei_print_buffer(char *label, uint8_t *buf, ssize_t len);
 
 /**
- * Opens the device /dev/txei, then sends ioctl to
+ * Opens the device /dev/mei, then sends ioctl to
  * establish communication with heci client firmware
  * module with guid
  * Return is MEI_HANDLE which has open file ID as one

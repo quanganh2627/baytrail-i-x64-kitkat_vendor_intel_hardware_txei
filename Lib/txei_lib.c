@@ -89,7 +89,7 @@ int mei_get_version_from_sysfs(MEI_HANDLE *my_handle_p)
 }
 
 /**
- * Opens the device /dev/txei, then sends ioctl to
+ * Opens the device /dev/mei, then sends ioctl to
  * establish communication with heci client firmware
  * module with guid
  * Return is MEI_HANDLE which has open file ID as one
@@ -250,9 +250,9 @@ MEI_MM_DMA *mei_alloc_dma(ssize_t my_size)
 
 	my_dma->data.size = (__u64)my_size;
 
-	my_dma->fd = open("/dev/txeimm", O_RDWR);
+	my_dma->fd = open("/dev/meimm", O_RDWR);
 	if (my_dma->fd <= 0) {
-		printf("cant open the /dev/txeimm\n");
+		printf("cant open the /dev/meimm\n");
 		printf("errno is %x\n", errno);
 		return NULL;
 	}
