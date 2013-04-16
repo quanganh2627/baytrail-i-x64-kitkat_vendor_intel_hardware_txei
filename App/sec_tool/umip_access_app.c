@@ -258,7 +258,8 @@ static int write_data_to_file( const char * const pFilename,
 	//
 	// Open the output data file.
 	//
-	outputFileHandle = open( pFilename, ( O_WRONLY | O_CREAT | O_TRUNC ) );
+	outputFileHandle = open( pFilename, ( O_WRONLY | O_CREAT | O_TRUNC ),
+				(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) );
 
 	if ( outputFileHandle < 0 ) {
 		LOGERR( "Unable to open the output data file %s.\n", pFilename );
@@ -670,7 +671,8 @@ static int provision_android_customer_data( const char * const provSchema,
 	 * Open the ACD provisioning output file for writing the return
 	 * data.
 	 */
-	provOutputFile = open( outputFilename, ( O_WRONLY | O_CREAT | O_TRUNC ) );
+	provOutputFile = open( outputFilename, ( O_WRONLY | O_CREAT | O_TRUNC ),
+				(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) );
 
 	if ( 0 >= provOutputFile ) {
 		/*
@@ -930,7 +932,8 @@ int main(int argc, char **argv)
 		}
 
 	} else if (what_to_do == OPCODE_IA2CHAABI_ACD_READ) {
-		file_id = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC);
+		file_id = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 
+				(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 		if (file_id <= 0) {
 			LOGERR("could not open the file %s\n", argv[3]);
 			usage();

@@ -236,7 +236,8 @@ int write_data_to_file( const char * const pFilename,
 	//
 	// Open the output data file.
 	//
-	outputFileHandle = open( pFilename, ( O_WRONLY | O_CREAT | O_TRUNC ) );
+	outputFileHandle = open( pFilename, ( O_WRONLY | O_CREAT | O_TRUNC ),
+				(S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) );
 
 	if ( outputFileHandle < 0 ) {
 		LOGERR( "Unable to open the output data file %s.\n", pFilename );
