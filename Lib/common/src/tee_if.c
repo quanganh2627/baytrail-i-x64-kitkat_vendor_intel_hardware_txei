@@ -76,7 +76,7 @@ static uint32_t send_cmd(
 	if( ( NULL == buf_ptr ) || ( NULL == buf_ptr[0].buffer ) )
 		return TEE_FAIL_INVALID_PARAM;
 
-        mei_print_buffer( "buf_ptr sent", buf_ptr[0].buffer, buf_ptr[0].size );
+//        mei_print_buffer( "buf_ptr sent", buf_ptr[0].buffer, buf_ptr[0].size );
         ret = mei_sndmsg( ptrHandle, buf_ptr[0].buffer, buf_ptr[0].size);
 	if (ret <= 0)
 	{
@@ -106,7 +106,7 @@ static uint32_t recv_cmd(
 		return ret;
 	}
 
-        mei_print_buffer("buf_ptr_recvd", buf_ptr[0].buffer, buf_ptr[0].size);
+//        mei_print_buffer("buf_ptr_recvd", buf_ptr[0].buffer, buf_ptr[0].size);
 
 	return TEE_SUCCESSFUL;
 }

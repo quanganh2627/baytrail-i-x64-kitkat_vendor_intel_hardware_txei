@@ -435,7 +435,7 @@ extern int provision_epid( const char *const epidConfigFile);
 //
 // Maximum Android Customer Data field data size in bytes.
 //
-#define ACD_MAX_DATA_SIZE_IN_BYTES 1024
+#define ACD_MAX_DATA_SIZE_IN_BYTES 512
 #define ACD_MIN_DATA_SIZE_IN_BYTES 0
 
 #define RPMB_MAX_INDICES_OF_SEP_MSG		6

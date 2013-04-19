@@ -63,7 +63,6 @@ int acd_init(const GUID *guid, void **ptrHandle)
 
 int acd_deinit(void *handle)
 {
-	printf("inside acd_deinit");
 	return tee_deinit(handle);
 }
 
@@ -74,7 +73,7 @@ int lock_customer_data( void *ptrHandle )
         struct data_buffer                              cmd_data_in[MAX_DATA_BUF_PARAMS];
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_lock_cmd_from_host      		params;
-        struct acd_generic_cmd_to_host        		resp;
+        struct acd_lock_cmd_to_host        		resp;
 
         // Initialize the parameters to zero
         memset( &params, 0, sizeof( params ) );
@@ -101,9 +100,9 @@ int lock_customer_data( void *ptrHandle )
 		mei_print_buffer("lock_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
         }
 #endif
-        else if( ACD_LOCK_SUCCESS != bswap_32( resp.acd_status ) )
+        else if( ACD_LOCK_SUCCESS != resp.acd_status)
         {
-                LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
+                LOGERR( "ACD Command failed in FW: 0x%08x\n", resp.acd_status);
 		mei_print_buffer("lock_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
         }
 
@@ -202,7 +201,7 @@ int set_customer_data( void *ptrHandle,
                 return( ACD_WRITE_SUCCESS - ret );
         }
 #endif
-        ret = bswap_32( resp.acd_status );
+        ret = resp.acd_status;
         if( ACD_WRITE_SUCCESS != ret )
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
@@ -278,7 +277,7 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
                 return( ACD_READ_SUCCESS - ret );
         }
 #endif
-        ret = bswap_32( resp.acd_status );
+        ret = resp.acd_status;
         if( ACD_READ_SUCCESS != ret )
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
@@ -296,7 +295,7 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
         }
         */
 
-        returned_size = bswap_16(resp.bytes_read);
+        returned_size = resp.bytes_read;
 
         LOGDBG("read = %d\n", returned_size);
 
@@ -376,6 +375,7 @@ int provision_customer_data( void *ptrHandle,
         /*
          *      Populate the parameter data structures
          */
+        params.hdr_req.main_opcode = ACD_MAIN_OPCODE;
         params.hdr_req.sub_opcode = OPCODE_IA2CHAABI_ACD_PROV;
         /*
          *      Setup the SEP message parameters for ACD provisioning.
@@ -383,7 +383,7 @@ int provision_customer_data( void *ptrHandle,
         params.index = provisionSchema;
         params.actual_size = inDataSize;
         params.max_size = inDataSize;
-        copySwap( params.buf, pInData, inDataSize, SWAP_PROV );
+        memcpy( params.buf, pInData, inDataSize );
         /*
          *      Link-up the parameter data structures
          */
@@ -403,18 +403,18 @@ int provision_customer_data( void *ptrHandle,
         if( ACD_PROV_SUCCESS != ret )
         {
                 LOGERR( "Received failed response: 0x%08x\n", ret );
-		mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		//mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
                 return( ACD_PROV_SUCCESS - ret );
         }
 #endif
-        ret = bswap_32( resp.acd_status );
+        ret = resp.acd_status;
         if( ACD_PROV_SUCCESS != ret )
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
-		mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		//mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
 		return ( ACD_PROV_SUCCESS - ret );
         }
-        returnDataSizeInBytes = bswap_32( resp.bytes_read );
+        returnDataSizeInBytes = resp.bytes_read;
         if( ACD_MIN_DATA_SIZE_IN_BYTES == returnDataSizeInBytes )
         {
                 /*
@@ -441,7 +441,8 @@ int provision_customer_data( void *ptrHandle,
                 /*
                  *      Copy the returned data byte array to the output buffer.
                  */
-                copySwap( *pOutData, resp.buf, returnDataSizeInBytes, SWAP_PROV );
+//                copySwap( *pOutData, resp.buf, returnDataSizeInBytes, SWAP_PROV );
+                memcpy( *pOutData, resp.buf, returnDataSizeInBytes );
                 /*
                  *      Return the output buffer size.
                  */

@@ -199,7 +199,7 @@ int mei_sndmsg(MEI_HANDLE *my_handle_p, uint8_t *buf, ssize_t my_size)
 	}
 
 
-	fprintf(stdout, "call write length = %d\n", (int)my_size);
+//	fprintf(stdout, "call write length = %d\n", (int)my_size);
 
 	rv = write(my_handle_p->fd, (void *)buf, my_size);
 	if (rv < 0) {
@@ -324,7 +324,7 @@ int mei_rcvmsg(MEI_HANDLE *my_handle_p, uint8_t *buf, ssize_t my_size)
 	}
 
 
-	fprintf(stdout, "call read length = %d\n", (int)my_size);
+//	fprintf(stdout, "call read length = %d\n", (int)my_size);
 
 	rv = read(my_handle_p->fd, (void *)buf, my_size);
 	if (rv < 0) {
