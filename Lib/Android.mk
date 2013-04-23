@@ -57,7 +57,7 @@ LOCAL_SRC_FILES += txei_lib.c   \
 $(LOCAL_SEC_DIR)/src/umip_access.c                   \
 $(LOCAL_COMMON_DIR)/src/tee_if.c
 
-LOCAL_CFLAGS := -DBAYTRAIL
+LOCAL_CFLAGS := -DBAYTRAIL -DACD_WIPE_TEST
 
 LOCAL_STATIC_LIBRARIES := CC6_ALL_BASIC_LIB
 LOCAL_SHARED_LIBRARIES := libcutils libc libtxei

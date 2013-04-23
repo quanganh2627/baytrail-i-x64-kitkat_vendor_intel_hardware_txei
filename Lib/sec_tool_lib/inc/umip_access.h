@@ -159,6 +159,14 @@ int acd_deinit(void *handle);
  */
 int lock_customer_data(void *ptrHandle);
 
+#ifdef ACD_WIPE_TEST
+/**
+ * wipe_customer_data
+ * @returns: 0 on success; negative value on failure
+ */
+int wipe_customer_data(void *ptrHandle);
+#endif
+
 /**
  * get_customer_data
  * @uiFieldIndex: Field index data to read
@@ -284,6 +292,7 @@ extern int provision_epid( const char *const epidConfigFile);
 #define OPCODE_IA2CHAABI_OS_VRL               3
 #define OPCODE_IA2CHAABI_ACD_LOCK             4
 #define OPCODE_IA2CHAABI_ACD_PROV             5
+#define OPCODE_IA2CHAABI_ACD_WIPE             6
 
 /*
  * Android Customer Data get_customer_data(), lock_customer_data(),

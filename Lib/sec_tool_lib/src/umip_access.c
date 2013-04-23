@@ -110,6 +110,52 @@ int lock_customer_data( void *ptrHandle )
 
 }       //  lock_customer_data
 
+#ifdef ACD_WIPE_TEST
+int wipe_customer_data( void *ptrHandle )
+{
+
+        uint32_t                                        ret;
+        struct data_buffer                              cmd_data_in[MAX_DATA_BUF_PARAMS];
+        struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
+        struct acd_generic_cmd_from_host      		params;
+        struct acd_generic_cmd_to_host        		resp;
+
+        // Initialize the parameters to zero
+        memset( &params, 0, sizeof( params ) );
+        memset( &resp, 0, sizeof( resp ) );
+        memset( cmd_data_in, 0, sizeof( cmd_data_in ) );
+        memset( cmd_data_out, 0, sizeof( cmd_data_out ) );
+        // Populate the parameter data structures
+        params.hdr_req.main_opcode = ACD_MAIN_OPCODE;
+        params.hdr_req.sub_opcode = OPCODE_IA2CHAABI_ACD_WIPE;
+        // Link-up the parameter data structures
+        INIT_FROM_HOST_PARAM_BUF( cmd_data_in[FROM_HOST_PARAM_INDEX], &params, sizeof( params ) );
+        INIT_TO_HOST_PARAM_BUF( cmd_data_out[TO_HOST_PARAM_INDEX], &resp, sizeof( resp ) );
+        // Send the message off to FW
+        ret = process_cmd( ptrHandle, DX_SEP_HOST_SEP_PROTOCOL_IA_ACCESS_OP_CODE, cmd_data_in, cmd_data_out, 2 );
+        if( ACD_LOCK_SUCCESS != ret )
+        {
+                LOGERR( "process_cmd failed: error 0x%x\n", ret );
+                return( ret );
+        }
+#ifdef ENABLE_LATER
+	else if (ACD_LOCK_SUCCESS != bswap_32( resp.hdr_resp.status ))
+        {
+                LOGERR( "Received failed response: 0x%08x\n", ret );
+		mei_print_buffer("wipe_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+        }
+#endif
+        else if(ACD_LOCK_SUCCESS != resp.acd_status)
+        {
+                LOGERR("ACD Command failed in FW: 0x%08x\n", resp.acd_status);
+		mei_print_buffer("wipe_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+        }
+
+        return(ACD_LOCK_SUCCESS - ret );
+
+}       //  wipe_customer_data
+#endif
+
 int set_customer_data( void *ptrHandle,
 		       const uint8_t uiFieldIndex,
                        uint16_t FieldSize,

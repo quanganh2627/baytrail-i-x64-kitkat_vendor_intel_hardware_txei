@@ -553,6 +553,9 @@ int main(int argc, char **argv)
 		DO_GPP_WP_STATUS,
 		DO_GPP_WP_LOCK,
 		DO_RPMB_PROV,
+#ifdef ACD_WIPE_TEST
+		DO_ACD_WIPE,
+#endif
 		DO_INVALID
 	}  what_to_do = DO_INVALID;
 	void *pDataBuffer = NULL;
@@ -565,6 +568,9 @@ int main(int argc, char **argv)
 #define ACD_READ_ARG_COUNT 4
 #define ACD_WRITE_ARG_COUNT 6
 #define ACD_LOCK_ARG_COUNT 2
+#ifdef ACD_WIPE_TEST
+#define ACD_WIPE_ARG_COUNT 2
+#endif
 #define ACD_PROV_ARG_COUNT 5
 #define EPID_PROV_ARG_COUNT 3
 #define PMDB_READ_ARG_COUNT 4
@@ -587,6 +593,9 @@ int main(int argc, char **argv)
 			{ "acd-read", required_argument, NULL, DO_ACD_READ },
 			{ "acd-write", required_argument, NULL, DO_ACD_WRITE },
 			{ "acd-lock", no_argument, NULL, DO_ACD_LOCK },
+#ifdef ACD_WIPE_TEST
+			{ "acd-wipe", no_argument, NULL, DO_ACD_WIPE },
+#endif
 			{ "acd-prov", required_argument, NULL, DO_ACD_PROV },
 			{ "epid-prov", required_argument, NULL, DO_EPID_PROV },
 			{ "pmdb-read", required_argument, NULL, DO_PMDB_READ },
@@ -681,7 +690,16 @@ int main(int argc, char **argv)
 			}
 			what_to_do = DO_ACD_LOCK;
 			break;
-
+#ifdef ACD_WIPE_TEST
+		case DO_ACD_WIPE:
+			if (argc != ACD_WIPE_ARG_COUNT) {
+				LOGERR("incorrect number of arguments\n");
+				usage( argv[ PROGNAME_IDX ] );
+				return EXIT_FAILURE;
+			}
+			what_to_do = DO_ACD_WIPE;
+			break;
+#endif
 		case DO_ACD_PROV:
 			if (argc != ACD_PROV_ARG_COUNT) {
 				LOGERR("incorrect number of arguments\n");
@@ -855,7 +873,17 @@ int main(int argc, char **argv)
 		}
 		result = EXIT_SUCCESS;
 		break;
-
+#ifdef ACD_WIPE_TEST
+	case DO_ACD_WIPE:
+		printf("Starting ACD wipe operation\n");
+		result = wipe_customer_data(ptrHandle);
+		if (result < 0) {
+			LOGERR("ACD wipe operaton failed %d\n", result);
+			return EXIT_FAILURE;
+		}
+		result = EXIT_SUCCESS;
+		break;
+#endif
 	case DO_ACD_READ:
 		printf("Starting ACD read operation\n");
 		result = get_customer_data( ptrHandle, acdIndex, &pDataBuffer );

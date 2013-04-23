@@ -788,6 +788,10 @@ int main(int argc, char **argv)
 		what_to_do = OPCODE_IA2CHAABI_ACD_WRITE;
 	else if (strncmp(argv[1], "lock", strlen("lock")) == 0)
 		what_to_do = OPCODE_IA2CHAABI_ACD_LOCK;
+#ifdef ACD_WIPE_TEST        
+	else if (strncmp(argv[1], "wipe", strlen("wipe")) == 0)
+		what_to_do = OPCODE_IA2CHAABI_ACD_WIPE;
+#endif        
 	else if (strncmp(argv[1], "prov", strlen("prov")) == 0) {
 		what_to_do = OPCODE_IA2CHAABI_ACD_PROV;
 	} else if ( strncmp(argv[1], "pmdb-", strlen("pmdb-")) == 0) {
@@ -807,8 +811,15 @@ int main(int argc, char **argv)
 		usage();
 		result = EXIT_FAILURE;
 		goto exit;
-
-	} else if ((what_to_do == OPCODE_IA2CHAABI_ACD_WRITE) && (argc != 6)) {
+    }
+#ifdef ACD_WIPE_TEST    
+    else if ((what_to_do == OPCODE_IA2CHAABI_ACD_WIPE) && (argc != 2)) {
+		usage();
+		result = EXIT_FAILURE;
+		goto exit;
+	} 
+#endif
+    else if ((what_to_do == OPCODE_IA2CHAABI_ACD_WRITE) && (argc != 6)) {
 		usage();
 		result = EXIT_FAILURE;
 		goto exit;
@@ -942,9 +953,15 @@ int main(int argc, char **argv)
 	if (what_to_do == OPCODE_IA2CHAABI_ACD_LOCK) {
 		result = lock_customer_data(ptrHandle);
 		goto exit;
-
+    } 
+#ifdef ACD_WIPE_TEST    
+    else if (what_to_do == OPCODE_IA2CHAABI_ACD_WIPE) {
+        result = wipe_customer_data(ptrHandle);
+        goto exit;
 	/* Read */
-	} else if (what_to_do == OPCODE_IA2CHAABI_ACD_READ) {
+	} 
+#endif    
+    else if (what_to_do == OPCODE_IA2CHAABI_ACD_READ) {
 		result = get_customer_data(ptrHandle, cmd_idx, &my_buffer);
 		if (result < 0) {
 			LOGERR("read operaton failed %d\n", result);
