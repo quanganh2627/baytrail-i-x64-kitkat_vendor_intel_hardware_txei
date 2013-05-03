@@ -51,7 +51,9 @@ LOCAL_COMMON_DIR := common
 LOCAL_COPY_HEADERS_TO := libtxei
 LOCAL_COPY_HEADERS := inc/txei.h	\
 sec_tool_lib/inc/ExtApp_qa_op_code.h	\
-sec_tool_lib/inc/umip_access.h
+sec_tool_lib/inc/umip_access.h \
+sec_tool_lib/inc/acd_reference.h \
+sec_tool_lib/inc/chaabi_error_codes.h
 
 LOCAL_SRC_FILES += txei_lib.c   \
 $(LOCAL_SEC_DIR)/src/umip_access.c                   \
