@@ -157,14 +157,14 @@ int acd_deinit(void *handle);
  * lock_customer_data
  * @returns: 0 on success; negative value on failure
  */
-int lock_customer_data(void *ptrHandle);
+int lock_customer_data();
 
 #ifdef ACD_WIPE_TEST
 /**
  * wipe_customer_data
  * @returns: 0 on success; negative value on failure
  */
-int wipe_customer_data(void *ptrHandle);
+int wipe_customer_data();
 #endif
 
 /**
@@ -182,7 +182,7 @@ int wipe_customer_data(void *ptrHandle);
  * Returns the number of bytes read, which is also the size of the memory buffer
  * pointed to by pvAdcFieldData, or a negative value if an error occurred.
  */
-int get_customer_data(void *ptrHandle, const uint8_t uiFieldIndex, void ** const pvAdcFieldData);
+int get_customer_data(const uint8_t uiFieldIndex, void ** const pvAdcFieldData);
 
 /**
  * set_customer_data
@@ -195,7 +195,6 @@ int get_customer_data(void *ptrHandle, const uint8_t uiFieldIndex, void ** const
  * @returns: 0 on success; negative value on failure
  */
 int set_customer_data(
-	void *ptrHandle,
 	const uint8_t uiFieldIndex,
 	const uint16_t FieldSize,
 	const uint16_t FieldMaxSize,
@@ -216,8 +215,7 @@ int set_customer_data(
  * of pOutDataSize bytes. If pOutDataSize is zero then pOutData will be a NULL
  * pointer. It is the caller's responsibility to deallocate the buffer.
  */
-int provision_customer_data( void *ptrHandle,
-			     const uint32_t provisionSchema,
+int provision_customer_data( const uint32_t provisionSchema,
                              const uint32_t inDataSize,
                              const void * const pInData,
                              uint32_t * const pOutDataSize,

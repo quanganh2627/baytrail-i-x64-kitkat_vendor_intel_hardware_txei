@@ -32,10 +32,6 @@
 #define LOG_TAG      "ACD-app"
 #include "sepdrm-log.h"
 
-void *ptrHandle;
-const GUID guid = {0xafa19346, 0x7459, 0x4f09, {0x9d, 0xad, 0x36, 0x61, 0x1f, 0xe4, 0x28, 0x60}};
-
-
 static void usage(void)
 {
     static const char *usage_string =
@@ -652,8 +648,7 @@ static int provision_android_customer_data( const char * const provSchema,
 	/*
 	 * Provision the data into the ACD and get the return data.
 	 */
-	status = provision_customer_data( ptrHandle,
-					  (uint32_t)provisioningSchema,
+	status = provision_customer_data( (uint32_t)provisioningSchema,
 	                                  provInputDataSize,
 	                                  pProvInputData,
 	                                  &provReturnDataSizeInBytes,
@@ -775,12 +770,6 @@ int main(int argc, char **argv)
 	if ((argc < 2) || (argc > 6)) {
 		usage();
 		return -1;
-	}
-
-	result = acd_init(&guid, &ptrHandle);
-	if ((result != EXIT_SUCCESS) || (ptrHandle == NULL))
-	{
-		return result;
 	}
 
 	/* check first parameter */
@@ -954,18 +943,18 @@ int main(int argc, char **argv)
 
 	/* Lock */
 	if (what_to_do == OPCODE_IA2CHAABI_ACD_LOCK) {
-		result = lock_customer_data(ptrHandle);
+		result = lock_customer_data();
 		goto exit;
     } 
 #ifdef ACD_WIPE_TEST    
     else if (what_to_do == OPCODE_IA2CHAABI_ACD_WIPE) {
-        result = wipe_customer_data(ptrHandle);
+        result = wipe_customer_data();
         goto exit;
 	/* Read */
 	} 
 #endif    
     else if (what_to_do == OPCODE_IA2CHAABI_ACD_READ) {
-		result = get_customer_data(ptrHandle, cmd_idx, &my_buffer);
+		result = get_customer_data(cmd_idx, &my_buffer);
 		if (result < 0) {
 			LOGERR("read operaton failed %d\n", result);
 			close(file_id);
@@ -999,7 +988,7 @@ int main(int argc, char **argv)
 			goto exit;
 		}
 
-		result = set_customer_data(ptrHandle, cmd_idx, data_size, data_max_size, my_buffer);
+		result = set_customer_data(cmd_idx, data_size, data_max_size, my_buffer);
 		if (result < 0) {
 			LOGERR("write operaton failed %d\n", result);
 			close(file_id);
@@ -1024,14 +1013,6 @@ int main(int argc, char **argv)
 	}
 
 	exit:
-	if (ptrHandle != NULL)
-	{
-		if (acd_deinit(ptrHandle) != 0)
-		{
-			LOGERR("Failed to deinit ACD");
-		}
-		ptrHandle = NULL;
-	}
 	return result;
 } /* end main() */
 

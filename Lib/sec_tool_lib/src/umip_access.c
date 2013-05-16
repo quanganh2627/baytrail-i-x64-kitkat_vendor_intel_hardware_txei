@@ -52,7 +52,7 @@
 #define PMDB_READ_SUB_OPCODE  1
 #define PMDB_WRITE_SUB_OPCODE 2
 
-
+const GUID guid = {0xafa19346, 0x7459, 0x4f09, {0x9d, 0xad, 0x36, 0x61, 0x1f, 0xe4, 0x28, 0x60}};
 int acd_init(const GUID *guid, void **ptrHandle)
 {
 	int result = tee_init(guid, ptrHandle);
@@ -66,7 +66,7 @@ int acd_deinit(void *handle)
 	return tee_deinit(handle);
 }
 
-int lock_customer_data( void *ptrHandle )
+int lock_customer_data()
 {
 
         uint32_t                                        ret;
@@ -74,6 +74,15 @@ int lock_customer_data( void *ptrHandle )
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_lock_cmd_from_host      		params;
         struct acd_lock_cmd_to_host        		resp;
+	void *ptrHandle;
+
+	//Initialize ACD by connecting using the GUID
+	ret = acd_init(&guid, &ptrHandle);
+	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	{
+                LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
+		return ret;
+	}
 
         // Initialize the parameters to zero
         memset( &params, 0, sizeof( params ) );
@@ -106,12 +115,21 @@ int lock_customer_data( void *ptrHandle )
 		mei_print_buffer("lock_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
         }
 
+	if (ptrHandle != NULL)
+	{
+		if (acd_deinit(ptrHandle) != 0)
+		{
+			LOGERR( "Failed to uninitialize ACD");
+		}
+		ptrHandle = NULL;
+	}
+
         return( ACD_LOCK_SUCCESS - ret );
 
 }       //  lock_customer_data
 
 #ifdef ACD_WIPE_TEST
-int wipe_customer_data( void *ptrHandle )
+int wipe_customer_data()
 {
 
         uint32_t                                        ret;
@@ -119,6 +137,17 @@ int wipe_customer_data( void *ptrHandle )
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_generic_cmd_from_host      		params;
         struct acd_generic_cmd_to_host        		resp;
+
+	void *ptrHandle;
+
+	//Initialize ACD by connecting using the GUID
+	ret = acd_init(&guid, &ptrHandle);
+	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	{
+		LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
+		return ret;
+	}
+
 
         // Initialize the parameters to zero
         memset( &params, 0, sizeof( params ) );
@@ -150,14 +179,21 @@ int wipe_customer_data( void *ptrHandle )
                 LOGERR("ACD Command failed in FW: 0x%08x\n", resp.acd_status);
 		mei_print_buffer("wipe_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
         }
+	if (ptrHandle != NULL)
+	{
+		if (acd_deinit(ptrHandle) != 0)
+		{
+			LOGERR( "Failed to uninitialize ACD");
+		}
+		ptrHandle = NULL;
+	}
 
         return(ACD_LOCK_SUCCESS - ret );
 
 }       //  wipe_customer_data
 #endif
 
-int set_customer_data( void *ptrHandle,
-		       const uint8_t uiFieldIndex,
+int set_customer_data( const uint8_t uiFieldIndex,
                        uint16_t FieldSize,
                        uint16_t FieldMaxSize,
                        const void * const pvAdcFieldData )
@@ -168,6 +204,7 @@ int set_customer_data( void *ptrHandle,
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_write_cmd_from_host       		params;
         struct acd_write_cmd_to_host         		resp;
+	void *ptrHandle;
 
         /*
          *      Sanity check
@@ -198,6 +235,14 @@ int set_customer_data( void *ptrHandle,
                 return( ACD_WRITE_ERROR_ILLEGAL_PARAMETER );
         }
 
+	//Initialize ACD by connecting using the GUID
+	ret = acd_init(&guid, &ptrHandle);
+	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	{
+		LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
+		return ret;
+	}
+
         /*
          *      Initialize the parameters to zero
          */
@@ -208,13 +253,6 @@ int set_customer_data( void *ptrHandle,
         /*
          *      Populate the parameter data structures
          */
-         /*
-        params.hdr_req.sub_opcode = bswap_32( OPCODE_IA2CHAABI_ACD_WRITE );
-        params.index = bswap_32( uiFieldIndex );
-        params.actual_size = bswap_32( FieldSize );
-        params.max_size = bswap_32( FieldMaxSize );
-        copySwap( params.buf, pvAdcFieldData, FieldSize, SWAP_FIELD_DATA );
-        */
 
         params.hdr_req.main_opcode = ACD_MAIN_OPCODE;
         params.hdr_req.sub_opcode = OPCODE_IA2CHAABI_ACD_WRITE;
@@ -254,12 +292,20 @@ int set_customer_data( void *ptrHandle,
 		mei_print_buffer("set_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
                 return( ACD_WRITE_SUCCESS - ret );
         }
+	if (ptrHandle != NULL)
+	{
+		if (acd_deinit(ptrHandle) != 0)
+		{
+			LOGERR( "Failed to uninitialize ACD");
+		}
+		ptrHandle = NULL;
+	}
 
         return( FieldSize );
 
 }       //  set_customer_data
 
-int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const pvAdcFieldData )
+int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
 {
 
         uint32_t                                        ret;
@@ -268,6 +314,15 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_read_cmd_from_host		        params;
         struct acd_read_cmd_to_host		        resp;
+	void *ptrHandle;
+
+	//Initialize ACD by connecting using the GUID
+	ret = acd_init(&guid, &ptrHandle);
+	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	{
+		LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
+		return ret;
+	}
 
         /*
          *      Sanity check
@@ -292,10 +347,6 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
         /*
          *      Populate the parameter data structures
          */
-         /*
-        params.hdr_req.sub_opcode = bswap_32( OPCODE_IA2CHAABI_ACD_READ );
-        params.index = bswap_32( uiFieldIndex );
-        */
         params.hdr_req.main_opcode = ACD_MAIN_OPCODE;
         params.hdr_req.sub_opcode = OPCODE_IA2CHAABI_ACD_READ;
         params.index = uiFieldIndex;
@@ -353,6 +404,16 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
         }
         //copySwap( *pvAdcFieldData, resp.buf, returned_size, SWAP_FIELD_DATA );
         memcpy(*pvAdcFieldData, resp.buf, returned_size);
+
+	if (ptrHandle != NULL)
+	{
+		if (acd_deinit(ptrHandle) != 0)
+		{
+			LOGERR( "Failed to uninitialize ACD");
+		}
+		ptrHandle = NULL;
+	}
+
         return( returned_size );
 
 }       //  get_customer_data
@@ -372,8 +433,7 @@ int get_customer_data( void *ptrHandle, const uint8_t uiFieldIndex, void **const
  * of pOutDataSize bytes. If pOutDataSize is zero then pOutData will be a NULL
  * pointer. It is the caller's responsibility to deallocate the buffer.
  */
-int provision_customer_data( void *ptrHandle,
-			     const uint32_t provisionSchema,
+int provision_customer_data( const uint32_t provisionSchema,
                              const uint32_t inDataSize,
                              const void * const pInData,
                              uint32_t * const pOutDataSize,
@@ -386,6 +446,7 @@ int provision_customer_data( void *ptrHandle,
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_write_cmd_from_host      		params;
         struct acd_read_cmd_to_host		       	resp;
+	void *ptrHandle;
 
         /*
          *      Sanity check.
@@ -411,6 +472,15 @@ int provision_customer_data( void *ptrHandle,
                 LOGERR( "ACD provisioning output data buffer pointer is NULL.\n" );
                 return( ACD_PROV_ERROR_ILLEGAL_PARAMETER );
         }
+
+	//Initialize ACD by connecting using the GUID
+	ret = acd_init(&guid, &ptrHandle);
+	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	{
+		LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
+		return ret;
+	}
+
         /*
          *      Initialize the parameters to zero
          */
@@ -494,6 +564,16 @@ int provision_customer_data( void *ptrHandle,
                  */
                 *pOutDataSize = returnDataSizeInBytes;
         }
+
+	if (ptrHandle != NULL)
+	{
+		if (acd_deinit(ptrHandle) != 0)
+		{
+			LOGERR( "Failed to uninitialize ACD");
+		}
+		ptrHandle = NULL;
+	}
+
         return( ACD_PROV_SUCCESS );
 
 }       //  provision_customer_data

@@ -32,9 +32,6 @@
 #include "misc_utils.h"
 #include "txei.h"
 
-void *ptrHandle;
-const GUID guid = {0xafa19346, 0x7459, 0x4f09, {0x9d, 0xad, 0x36, 0x61, 0x1f, 0xe4, 0x28, 0x60}};
-
 //#define DEBUG
 #ifdef DEBUG
 # define LOGERR(fmt, arg...)						\
@@ -482,8 +479,7 @@ static int provision_android_customer_data( const int provisioningSchema,
 	/*
 	 * Provision the data into the ACD and get the return data.
 	 */
-	status = provision_customer_data( ptrHandle,
-					  (uint32_t)provisioningSchema,
+	status = provision_customer_data( (uint32_t)provisioningSchema,
 					  provInputDataSize,
 					  pProvInputData,
 					  &provReturnDataSizeInBytes,
@@ -829,14 +825,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	/* Initialize ACD by connecting using the GUID
-	*/
-	result = acd_init(&guid, &ptrHandle);
-	if ((result != EXIT_SUCCESS) || (ptrHandle == NULL))
-	{
-		return result;
-	}
-
 	/*
 	 * Now that the command line options have been processed do
 	 * the operation.
@@ -866,7 +854,7 @@ int main(int argc, char **argv)
 
 	case DO_ACD_LOCK:
 		printf("Starting ACD lock operation\n");
-		result = lock_customer_data(ptrHandle);
+		result = lock_customer_data();
 		if (result < 0) {
 			LOGERR("ACD lock operaton failed %d\n", result);
 			return EXIT_FAILURE;
@@ -876,7 +864,7 @@ int main(int argc, char **argv)
 #ifdef ACD_WIPE_TEST
 	case DO_ACD_WIPE:
 		printf("Starting ACD wipe operation\n");
-		result = wipe_customer_data(ptrHandle);
+		result = wipe_customer_data();
 		if (result < 0) {
 			LOGERR("ACD wipe operaton failed %d\n", result);
 			return EXIT_FAILURE;
@@ -886,7 +874,7 @@ int main(int argc, char **argv)
 #endif
 	case DO_ACD_READ:
 		printf("Starting ACD read operation\n");
-		result = get_customer_data( ptrHandle, acdIndex, &pDataBuffer );
+		result = get_customer_data( acdIndex, &pDataBuffer );
 		if (result < 0) {
 			LOGERR("read operaton failed %d\n", result);
 			if (pDataBuffer != NULL)
@@ -914,7 +902,7 @@ int main(int argc, char **argv)
 			       inputFilename, dataSize, dataSizeFromFile);
 			return EXIT_FAILURE;
 		}
-		result = set_customer_data( ptrHandle, acdIndex, dataSize, dataMaxSize, pDataBuffer);
+		result = set_customer_data( acdIndex, dataSize, dataMaxSize, pDataBuffer);
 		if (result < 0) {
 			LOGERR("write operation failed %d\n", result);
 			if (pDataBuffer != NULL)
@@ -965,15 +953,6 @@ int main(int argc, char **argv)
 	if (result == EXIT_SUCCESS) {
 		printf("completed successfully\n");
 	}
-	if (ptrHandle != NULL)
-	{
-		if (acd_deinit(ptrHandle) != 0)
-		{
-			printf("Failed to deinit ACD");
-		}
-		ptrHandle = NULL;
-	}
-
 	return result;
 } /* end main() */
 
