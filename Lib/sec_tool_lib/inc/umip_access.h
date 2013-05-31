@@ -23,6 +23,10 @@
 #include "chaabi_error_codes.h"
 #include "txei.h"
 
+#ifndef LEGACY_ACD_CODE
+#include "acds_module_error.h"
+#endif
+
 /*
  * Android Customer Data Widevine keybox provisioning schema values.
  */
@@ -292,6 +296,12 @@ extern int provision_epid( const char *const epidConfigFile);
 #define OPCODE_IA2CHAABI_ACD_PROV             5
 #define OPCODE_IA2CHAABI_ACD_WIPE             6
 
+#define ACD_LOCK_SUCCESS			0
+#define ACD_PROV_SUCCESS			0
+#define ACD_READ_SUCCESS			0
+#define ACD_WRITE_SUCCESS			0
+
+#ifdef LEGACY_ACD_CODE
 /*
  * Android Customer Data get_customer_data(), lock_customer_data(),
  * provision_customer_data(), and set_customer_data() error code return values.
@@ -301,14 +311,12 @@ extern int provision_epid( const char *const epidConfigFile);
  * because the data being provisioned is too large to be written) These macros
  * will have to be kept synchronized with the same EXTFW macros.
  */
-#define ACD_LOCK_SUCCESS                             0
 #define ACD_LOCK_ERROR_NO_CUSTOMER_DATA             -1
 #define ACD_LOCK_ERROR_CUSTOMER_DATA_ALREADY_LOCKED -2
 #define ACD_LOCK_ERROR_UMIP_READ_WRITE_FAILURE      -3
 #define ACD_LOCK_ERROR_HMAC_FAILURE                 -4
 #define ACD_LOCK_ERROR_FIELD_TABLE_CACHE_ERROR      -5
 
-#define ACD_PROV_SUCCESS                                0
 #define ACD_PROV_ERROR_ILLEGAL_PARAMETER               -1
 #define ACD_PROV_ERROR_SEP_OPERATION                   -2
 #define ACD_PROV_ERROR_RETURN_DATA_MEM_ALLOC_FAIL      -3
@@ -340,7 +348,6 @@ extern int provision_epid( const char *const epidConfigFile);
 #define ACD_PROV_WV_HASH_MISMATCH		       -29
 
 
-#define ACD_READ_SUCCESS                                   0
 #define ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER            -1
 #define ACD_READ_ERROR_HMAC_VERIFICATION_FAILURE          -2
 #define ACD_READ_ERROR_TABLE_HMAC_FAILURE                 -3
@@ -349,7 +356,6 @@ extern int provision_epid( const char *const epidConfigFile);
 #define ACD_READ_ERROR_FIELD_TABLE_CACHE_ERROR            -6
 #define ACD_READ_SECURE_DATA_PROVISIONED_AND_WRITE_ONLY   -7
 
-#define ACD_WRITE_SUCCESS                            0
 #define ACD_WRITE_ERROR_ILLEGAL_PARAMETER           -1
 #define ACD_WRITE_ERROR_CUSTOMER_DATA_LOCKED        -2
 #define ACD_WRITE_ERROR_MAX_SIZE_TOO_LARGE          -3
@@ -361,6 +367,8 @@ extern int provision_epid( const char *const epidConfigFile);
 #define ACD_WRITE_ERROR_FIELD_TABLE_CACHE_ERROR     -9
 #define ACD_WRITE_ERROR_SECURE_DATA_LOCKED          -10
 #define ACD_WRITE_ERROR_SECURE_DATA_FAILURE         -11
+
+#endif
 
 
 

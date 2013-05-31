@@ -990,7 +990,14 @@ int main(int argc, char **argv)
 
 		result = set_customer_data(cmd_idx, data_size, data_max_size, my_buffer);
 		if (result < 0) {
-			LOGERR("write operaton failed %d\n", result);
+
+			if (result == -ACD_WRITE_ERROR_WEAR_OUT_VIOLATION)
+				LOGERR("write operaton blocked, due to wear"
+				"level protection: %d\n", result);
+			else
+				LOGERR("write operaton failed. error "
+				"code = %d\n", result);
+
 			close(file_id);
 			free(my_buffer);
 			goto exit;

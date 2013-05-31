@@ -904,7 +904,14 @@ int main(int argc, char **argv)
 		}
 		result = set_customer_data( acdIndex, dataSize, dataMaxSize, pDataBuffer);
 		if (result < 0) {
-			LOGERR("write operation failed %d\n", result);
+
+			if (result == -ACD_WRITE_ERROR_WEAR_OUT_VIOLATION)
+				LOGERR("write operaton blocked, due to wear"
+				"level protection: %d\n", result);
+			else
+				LOGERR("write operaton failed. error "
+				"code = %d\n", result);
+
 			if (pDataBuffer != NULL)
 				free(pDataBuffer);
 			return EXIT_FAILURE;
