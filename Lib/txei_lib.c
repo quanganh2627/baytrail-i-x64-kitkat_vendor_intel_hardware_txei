@@ -111,7 +111,7 @@ MEI_HANDLE *mei_connect(const GUID *guid)
 		printf("cannot allocate space for handle\n");
 		return NULL;
 	}
-	
+
 	/* Set the Guid */
 	memcpy(&my_handle_p->guid, guid, sizeof(GUID));
 
@@ -147,7 +147,7 @@ MEI_HANDLE *mei_connect(const GUID *guid)
 	/* Grab the client properties */
 	memcpy(&my_handle_p->client_properties, &data.d.out_client_properties,
 		sizeof(MEI_CLIENT));
-	
+
 	return my_handle_p;
 }
 
@@ -254,6 +254,8 @@ MEI_MM_DMA *mei_alloc_dma(ssize_t my_size)
 	if (my_dma->fd <= 0) {
 		printf("cant open the /dev/meimm\n");
 		printf("errno is %x\n", errno);
+		my_dma->fd = 0;
+		free(my_dma);
 		return NULL;
 	}
 
@@ -264,6 +266,7 @@ MEI_MM_DMA *mei_alloc_dma(ssize_t my_size)
 		printf("errno is %x\n", errno);
 		close(my_dma->fd);
 		my_dma->fd = 0;
+		free(my_dma);
 		return NULL;
 	}
 

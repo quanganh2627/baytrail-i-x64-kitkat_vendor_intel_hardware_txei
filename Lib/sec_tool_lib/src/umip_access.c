@@ -100,6 +100,7 @@ int lock_customer_data()
         if( ACD_LOCK_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
+		ptrHandle = NULL;
                 return( ret );
         }
 #ifdef ENABLE_LATER
@@ -165,6 +166,7 @@ int wipe_customer_data()
         if( ACD_LOCK_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
+		ptrHandle = NULL;
                 return( ret );
         }
 #ifdef ENABLE_LATER
@@ -274,6 +276,7 @@ int set_customer_data( const uint8_t uiFieldIndex,
         if( ACD_WRITE_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
+		ptrHandle = NULL;
                 return( ACD_WRITE_SUCCESS - ret );
         }
 #ifdef ENABLE_LATER
@@ -281,7 +284,8 @@ int set_customer_data( const uint8_t uiFieldIndex,
         if( ACD_WRITE_SUCCESS != ret )
         {
                 LOGERR( "Received failed response: 0x%08x\n", ret );
-		mei_print_buffer("set_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		mei_print_buffer("set_customer_data response", (uint8_t *)&resp, sizeof(resp));
+		ptrHandle = NULL;
                 return( ACD_WRITE_SUCCESS - ret );
         }
 #endif
@@ -290,6 +294,7 @@ int set_customer_data( const uint8_t uiFieldIndex,
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
 		mei_print_buffer("set_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		ptrHandle = NULL;
                 return( ACD_WRITE_SUCCESS - ret );
         }
 	if (ptrHandle != NULL)
@@ -330,11 +335,13 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( ( ACD_MIN_FIELD_INDEX > uiFieldIndex ) || ( ACD_MAX_FIELD_INDEX < uiFieldIndex ) )
         {
                 LOGERR( "field index %u is illegal.\n", uiFieldIndex );
+		ptrHandle = NULL;
                 return( ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER );
         }
         if( ( NULL == pvAdcFieldData ) || ( NULL != *pvAdcFieldData ) )
         {
                 LOGERR( "pvAdcFieldData is invalid\n" );
+		ptrHandle = NULL;
                 return( ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER );
         }
         /*
@@ -363,6 +370,7 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( ACD_READ_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
+		ptrHandle = NULL;
                 return( ACD_READ_SUCCESS - ret );
         }
 #ifdef ENABLE_LATER
@@ -371,6 +379,7 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         {
                 LOGERR( "Received failed response: 0x%08x\n", ret );
 		mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		ptrHandle = NULL;
                 return( ACD_READ_SUCCESS - ret );
         }
 #endif
@@ -379,18 +388,9 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
 		mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		ptrHandle = NULL;
                 return( ACD_READ_SUCCESS - ret );
         }
-
-        /*
-        returned_size = bswap_32( resp.bytes_read );
-        if( ACD_FIELD_LENGTH < returned_size )
-        {
-                LOGERR( "Returned data too large: max size = 0x%08x, returned size = 0x%08x\n", ACD_FIELD_LENGTH, returned_size );
-                LOGERR( "Truncating returned data to maxium size\n" );
-                returned_size = ACD_FIELD_LENGTH;
-        }
-        */
 
         returned_size = resp.bytes_read;
 
@@ -400,9 +400,10 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( NULL == *pvAdcFieldData )
         {
                 LOGERR( "unable to allocate the read buffer\n" );
+		ptrHandle = NULL;
                 return( ACD_READ_ERROR_UMIP_READ_FAILURE );
         }
-        //copySwap( *pvAdcFieldData, resp.buf, returned_size, SWAP_FIELD_DATA );
+
         memcpy(*pvAdcFieldData, resp.buf, returned_size);
 
 	if (ptrHandle != NULL)
@@ -512,6 +513,7 @@ int provision_customer_data( const uint32_t provisionSchema,
         if( ACD_PROV_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
+		ptrHandle = NULL;
                 return( ACD_PROV_SUCCESS - ret );
         }
 #ifdef ENABLE_LATER
@@ -520,6 +522,7 @@ int provision_customer_data( const uint32_t provisionSchema,
         {
                 LOGERR( "Received failed response: 0x%08x\n", ret );
 		//mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		ptrHandle = NULL;
                 return( ACD_PROV_SUCCESS - ret );
         }
 #endif
@@ -528,6 +531,7 @@ int provision_customer_data( const uint32_t provisionSchema,
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
 		//mei_print_buffer("provision_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+		ptrHandle = NULL;
 		return ( ACD_PROV_SUCCESS - ret );
         }
         returnDataSizeInBytes = resp.bytes_read;
@@ -547,11 +551,18 @@ int provision_customer_data( const uint32_t provisionSchema,
                 /*
                  *      Allocate memory for copying the return data to.
                  */
+		if (NULL == pOutData)
+		{
+			LOGERR( "ACD provisioning output data buffer pointer is NULL.\n" );
+			ptrHandle = NULL;
+			return( ACD_PROV_ERROR_ILLEGAL_PARAMETER );
+		}
                 *pOutData = calloc( (size_t)returnDataSizeInBytes, sizeof( uint8_t ) );
                 if( NULL == *pOutData )
                 {
                         LOGERR( "Could not allocate 0x%08x bytes of memory for output data buffer.\n", returnDataSizeInBytes );
                         *pOutDataSize = ACD_MIN_DATA_SIZE_IN_BYTES;
+			ptrHandle = NULL;
                         return( ACD_PROV_ERROR_RETURN_DATA_MEM_ALLOC_FAIL );
                 }
                 /*
