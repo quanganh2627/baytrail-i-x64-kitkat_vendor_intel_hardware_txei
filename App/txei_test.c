@@ -14,6 +14,7 @@
 
 #define GUID_BUF_LENGTH	(11)
 
+const GUID nfc_block_guid = {0x0bb17a78, 0x2a8e, 0x4c50, {0x94, 0xd4, 0x50, 0x26, 0x67, 0x23, 0x77, 0x5c}};
 
 void print_usage(void)
 {
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
 
 	GUID my_guid;
 	
-	if (argc != 6) {
+	if ((argc != 6) && (argc != 7)) {
 		printf("Incorrected number of arguments %d\n", argc);
 		print_usage();
 		return -1;
@@ -249,6 +250,31 @@ int main(int argc, char **argv)
 			mei_print_buffer("entire rcv_msg_buf", rcv_msg_buf,
 			input_rcv_count);
 		}
+
+		if (0 == memcmp(&nfc_block_guid, &my_guid, sizeof(GUID))) {
+			if (snd_msg_buf[2] || snd_msg_buf[3]) {
+				printf("Receiving 2nd response...\n");
+				rcv_count = mei_rcvmsg(my_handle_p, rcv_msg_buf, input_rcv_count);
+
+				if (strncmp((char *)argv[6], "-", strlen("-")) != 0) {
+					fd_out = open(argv[6], O_WRONLY| O_CREAT | O_TRUNC,
+					S_IRWXU | S_IRWXG);
+					if (fd_out <= 0) {
+						printf("cannot open output 1 message file\n");
+						ret_val = -1;
+						goto error_exit;
+					}
+					file_ops_result = write(fd_out, rcv_msg_buf, rcv_count);
+					printf("we wrote %x bytes out of output rcv buffer\n",
+					(unsigned int)rcv_count);
+					close(fd_out);
+				} else {
+					printf("There is no output 1 buffer file\n");
+					mei_print_buffer("2nd response", rcv_msg_buf, rcv_count);
+				}
+			}
+		}
+
 	}
 
 
