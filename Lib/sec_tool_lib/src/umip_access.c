@@ -367,30 +367,28 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
          *      Send the message off to FW
          */
         ret = process_cmd( ptrHandle, DX_SEP_HOST_SEP_PROTOCOL_IA_ACCESS_OP_CODE, cmd_data_in, cmd_data_out, 2 );
+
         if( ACD_READ_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
 		ptrHandle = NULL;
                 return( ACD_READ_SUCCESS - ret );
         }
-#ifdef ENABLE_LATER
-        ret = bswap_32( resp.hdr_resp.status );
-        if( ACD_READ_SUCCESS != ret )
-        {
-                LOGERR( "Received failed response: 0x%08x\n", ret );
-		mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
-		ptrHandle = NULL;
-                return( ACD_READ_SUCCESS - ret );
-        }
-#endif
+
         ret = resp.acd_status;
-        if( ACD_READ_SUCCESS != ret )
+
+        if( ACD_READ_SUCCESS != ret && ACD_READ_SECURE_DATA_PROVISIONED_AND_WRITE_ONLY != ret)
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
 		mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
 		ptrHandle = NULL;
                 return( ACD_READ_SUCCESS - ret );
         }
+
+	if (ACD_READ_SECURE_DATA_PROVISIONED_AND_WRITE_ONLY == ret)
+	{
+		LOGDBG( "Read not allowed on this index\n");
+	}
 
         returned_size = resp.bytes_read;
 
