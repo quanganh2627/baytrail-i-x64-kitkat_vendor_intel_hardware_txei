@@ -15,7 +15,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/inc
 #
 LOCAL_MODULE := libtxei
 #
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 #
 include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
@@ -33,7 +33,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/inc
 #
 LOCAL_MODULE := libtxei
 #
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 #
 include $(BUILD_STATIC_LIBRARY)
 
@@ -97,7 +97,7 @@ $(LOCAL_PATH)/common/inc/
 
 LOCAL_MODULE := libtxeimiscutils
 
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
 
