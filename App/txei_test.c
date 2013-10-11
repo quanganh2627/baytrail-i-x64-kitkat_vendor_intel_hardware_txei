@@ -15,6 +15,7 @@
 #define GUID_BUF_LENGTH	(11)
 
 const GUID nfc_block_guid = {0x0bb17a78, 0x2a8e, 0x4c50, {0x94, 0xd4, 0x50, 0x26, 0x67, 0x23, 0x77, 0x5c}};
+#define MAX_DISCONNECT_TIMEOUT (256)
 
 void print_usage(void)
 {
@@ -34,6 +35,8 @@ void print_usage(void)
 	printf("		file, then the remainder of the buffer will be zeros.\n\n");
 	printf("	4. Name of input message file (binary file) - means no file\n");
 	printf("	5. Name of output message file (binary file) - means no file\n");
+	printf("	6. Name of second output message file (binary file) - means no file\n");
+	printf("	7. Timeout in seconds, prior to disconnect. - means no timeout.\n");
 }
 
 int main(int argc, char **argv)
@@ -61,8 +64,10 @@ int main(int argc, char **argv)
 	unsigned int read_guid[GUID_BUF_LENGTH] = {0};
 
 	GUID my_guid;
-	
-	if ((argc != 6) && (argc != 7)) {
+	/* By default disconnect timeout is set to 1 seconds */
+	uint32_t disconnect_timeout = 1;
+
+	if ((argc != 6) && (argc != 7) && (argc != 8)) {
 		printf("Incorrected number of arguments %d\n", argc);
 		print_usage();
 		return -1;
@@ -277,6 +282,30 @@ int main(int argc, char **argv)
 
 	}
 
+	if (argc == 8) {
+
+		if (strncmp((char *)argv[7], "-", strlen("-")) != 0) {
+
+			result = sscanf(argv[7], "%d", (unsigned int *)&disconnect_timeout);
+			if (result != 1) {
+				printf("could not get timeout value.\n");
+				print_usage();
+				return -1;
+			}
+			if (disconnect_timeout > MAX_DISCONNECT_TIMEOUT) {
+				printf("Timeout -> %d, cannot be more than %d seconds.\n",
+				disconnect_timeout, MAX_DISCONNECT_TIMEOUT);
+				print_usage();
+				return -1;
+			} else if (disconnect_timeout == 0) {
+				/* Setting it to default value 1, in this case */
+				disconnect_timeout = 1;
+			}
+
+			printf("Set timeout to %d\n", disconnect_timeout);
+		}
+
+	}
 
 error_exit:
 
@@ -287,7 +316,7 @@ error_exit:
 		so mei driver, still ends up disconnecting.
 		This is a temp fix. This is not a common use-case.
 		Other option is to fix in driver.*/
-		sleep(1);
+		sleep(disconnect_timeout);
 	} else {
 		/* We are done. Now we only process output. Close device */
 		mei_disconnect(my_handle_p);
