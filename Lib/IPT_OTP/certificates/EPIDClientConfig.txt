@@ -1,0 +1,4 @@
+epidparamcertfilepath = /system/etc/security/EPID_certs/epid_paramcert.dat
+prodgrouplegacycertfilepath = /system/etc/security/EPID_certs/PAVP_Group_VLV2EPIDPROD_Public_Keys.bin
+preprodgrouplegacycertfilepath = /system/etc/security/EPID_certs/PAVP_Group_VLV2EPIDPREPROD_Public_Keys.bin
+x509groupcertfilepath = /system/etc/security/EPID_certs/

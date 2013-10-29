@@ -101,3 +101,12 @@ LOCAL_MODULE_TAGS := eng
 
 include $(BUILD_STATIC_LIBRARY)
 
+#####################
+#  IPT_OTP libraries and Sep service
+#
+subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk,  \
+        IPT_OTP                                                 \
+        service                                                 \
+        ))
+ 
+include $(subdirs)
