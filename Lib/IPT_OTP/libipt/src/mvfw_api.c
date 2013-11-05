@@ -60,12 +60,17 @@ static uint32_t mvfw_cmd(
 	struct data_buffer cmd_data_in;
 	struct data_buffer cmd_data_out;
 	void *ptrHandle;
-	bool is_data_msg = FALSE;
 
 	Enter("cmd_id=0x%X\n", cmd_id);
 
-	if (cmd_id == MVFW_SEND_MSG_CMD_ID)
-		is_data_msg = TRUE;
+	if (cmd_id == MVFW_SEND_MSG_CMD_ID) {
+		if ((in_data == NULL) || (in_data_length == 0) ||
+				(in_data_length > MAX_MSG_FROM_HOST_LENGTH_IN_BYTES) ||
+				(out_data == NULL) || (out_data_length == NULL)) {
+			LOGERR("Invalid input\n");
+			return MVFW_FAIL_INVALID_PARAM;
+		}
+	}
 
 	ret = ipt_tee_intf_init(&IPT_HECI_CLIENT_GUID, &ptrHandle);
 	if ((ret != MVFW_SUCCESS) || (ptrHandle == NULL)) {
@@ -85,7 +90,7 @@ static uint32_t mvfw_cmd(
 	g_resp_param.header.cmd_id = cmd_id;
 	g_resp_param.header.status = MVFW_SUCCESS;
 
-	if (is_data_msg == TRUE) {
+	if (cmd_id == MVFW_SEND_MSG_CMD_ID) {
 		/* Initialize fw parameters to data values */
 		g_req_param.in_data_length = in_data_length;
 		g_req_param.expected_out_data_length = *out_data_length;
@@ -114,7 +119,7 @@ static uint32_t mvfw_cmd(
 	/* The return status from the firmware is carried back in g_resp_param.header */
 	ret = g_resp_param.header.status;
 
-	if (is_data_msg == TRUE) {
+	if (cmd_id == MVFW_SEND_MSG_CMD_ID) {
 		if (ret != MVFW_SUCCESS) {
 			LOGERR("MVFW command process failed, status=%u\n", g_resp_param.header.status);
 			goto disconnect_mei;
