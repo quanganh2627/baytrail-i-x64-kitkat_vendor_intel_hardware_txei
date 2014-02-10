@@ -2,10 +2,18 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 #
-LOCAL_LIB_DIR := $(LOCAL_PATH)
-#
 LOCAL_COPY_HEADERS_TO := libtxei
 LOCAL_COPY_HEADERS += inc/txei.h
+
+LOCAL_MODULE := libtxei_export_headers
+
+include $(BUILD_COPY_HEADERS)
+
+include $(CLEAR_VARS)
+#
+LOCAL_LIB_DIR := $(LOCAL_PATH)
+#
+LOCAL_REQUIRED_MODULE := libtxei_export_headers
 
 LOCAL_SRC_FILES += txei_lib.c
 #
@@ -22,8 +30,7 @@ include $(CLEAR_VARS)
 #
 LOCAL_LIB_DIR := $(LOCAL_PATH)
 #
-LOCAL_COPY_HEADERS_TO := libtxei
-LOCAL_COPY_HEADERS += inc/txei.h
+LOCAL_REQUIRED_MODULE := libtxei_export_headers
 
 LOCAL_SRC_FILES += txei_lib.c
 #
@@ -48,8 +55,10 @@ LOCAL_LIB_DIR := $(LOCAL_PATH)
 LOCAL_SEC_DIR := sec_tool_lib
 LOCAL_COMMON_DIR := common
 
+LOCAL_REQUIRED_MODULE := libtxei_export_headers
+
 LOCAL_COPY_HEADERS_TO := libtxei
-LOCAL_COPY_HEADERS := inc/txei.h	\
+LOCAL_COPY_HEADERS := \
 sec_tool_lib/inc/ExtApp_qa_op_code.h	\
 sec_tool_lib/inc/umip_access.h \
 sec_tool_lib/inc/acd_reference.h \
@@ -108,5 +117,5 @@ subdirs := $(addprefix $(LOCAL_PATH)/,$(addsuffix /Android.mk,  \
         IPT_OTP                                                 \
         service                                                 \
         ))
- 
+
 include $(subdirs)
