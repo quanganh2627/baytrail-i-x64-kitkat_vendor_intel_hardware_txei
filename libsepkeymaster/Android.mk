@@ -1,6 +1,7 @@
 #
 # Build the key master HAL library
 #
+ifeq ($(BUILD_WITH_SECURITY_FRAMEWORK),txei)
 
 LOCAL_PATH := $(call my-dir)
 
@@ -19,6 +20,8 @@ LOCAL_WHOLE_STATIC_LIBRARIES += liblog
 LOCAL_SHARED_LIBRARIES := libcutils libc
 
 LOCAL_C_INCLUDES := \
-    $(KM_APP_DIR)/inc 
+    $(KM_APP_DIR)/inc
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif
