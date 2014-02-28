@@ -313,36 +313,36 @@ int set_customer_data( const uint8_t uiFieldIndex,
 int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
 {
 
-        uint32_t                                        ret;
-        uint32_t                                        returned_size;
+        uint32_t                                        ret = 0xffffffff;
+        uint32_t                                        returned_size = 0;
         struct data_buffer                              cmd_data_in[MAX_DATA_BUF_PARAMS];
         struct data_buffer                              cmd_data_out[MAX_DATA_BUF_PARAMS];
         struct acd_read_cmd_from_host		        params;
         struct acd_read_cmd_to_host		        resp;
-	void *ptrHandle;
+	void *ptrHandle = NULL;
 
 	//Initialize ACD by connecting using the GUID
 	ret = acd_init(&guid, &ptrHandle);
-	if ((ret != EXIT_SUCCESS) || (ptrHandle == NULL))
+	if (!(ret == EXIT_SUCCESS && ptrHandle))
 	{
-		LOGERR( "Failed to Initialize ACD: 0x%08x\n", ret );
-		return ret;
+		LOGERR("Failed to Initialize ACD: 0x%08x\n", ret);
+		goto exit;
 	}
 
         /*
          *      Sanity check
          */
-        if( ( ACD_MIN_FIELD_INDEX > uiFieldIndex ) || ( ACD_MAX_FIELD_INDEX < uiFieldIndex ) )
+        if(!( ACD_MIN_FIELD_INDEX < uiFieldIndex && ACD_MAX_FIELD_INDEX > uiFieldIndex ))
         {
                 LOGERR( "field index %u is illegal.\n", uiFieldIndex );
-		ptrHandle = NULL;
-                return( ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER );
+                ret = ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER;
+				goto exit;
         }
-        if( ( NULL == pvAdcFieldData ) || ( NULL != *pvAdcFieldData ) )
+		if(!(pvAdcFieldData))
         {
                 LOGERR( "pvAdcFieldData is invalid\n" );
-		ptrHandle = NULL;
-                return( ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER );
+                ret = ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER;
+				goto exit;
         }
         /*
          *      Initialize the parameters to zero
@@ -371,8 +371,8 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( ACD_READ_SUCCESS != ret )
         {
                 LOGERR( "process_cmd failed: error 0x%x\n", ret );
-		ptrHandle = NULL;
-                return( ACD_READ_SUCCESS - ret );
+                ret = ACD_READ_SUCCESS - ret;
+				goto exit;
         }
 
         ret = resp.acd_status;
@@ -380,9 +380,9 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( ACD_READ_SUCCESS != ret && ACD_READ_SECURE_DATA_PROVISIONED_AND_WRITE_ONLY != ret)
         {
                 LOGERR( "ACD Command failed in FW: 0x%08x\n", ret );
-		mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
-		ptrHandle = NULL;
-                return( ACD_READ_SUCCESS - ret );
+				mei_print_buffer("get_customer_data response", (uint8_t *)&resp, sizeof(resp)); 
+               ret = ACD_READ_SUCCESS - ret;
+			   goto exit;
         }
 
 	if (ACD_READ_SECURE_DATA_PROVISIONED_AND_WRITE_ONLY == ret)
@@ -398,11 +398,14 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         if( NULL == *pvAdcFieldData )
         {
                 LOGERR( "unable to allocate the read buffer\n" );
-		ptrHandle = NULL;
-                return( ACD_READ_ERROR_UMIP_READ_FAILURE );
+                ret = ACD_READ_ERROR_UMIP_READ_FAILURE;
+				goto exit;
         }
 
         memcpy(*pvAdcFieldData, resp.buf, returned_size);
+		ret = returned_size;
+
+exit:
 
 	if (ptrHandle != NULL)
 	{
@@ -413,7 +416,7 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
 		ptrHandle = NULL;
 	}
 
-        return( returned_size );
+        return ret;
 
 }       //  get_customer_data
 

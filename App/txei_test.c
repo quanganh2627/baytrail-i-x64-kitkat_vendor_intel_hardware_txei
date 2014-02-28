@@ -213,11 +213,14 @@ int main(int argc, char **argv)
 		printf("Sending output buffer\n");
 		mei_print_buffer("first 10 chrs of snd_msg_buf", snd_msg_buf, 10);
 		
-		snd_count = mei_sndmsg(my_handle_p, snd_msg_buf, input_snd_count);
+		while(1) {
+			printf("keep sending the message\n");
+			snd_count = mei_sndmsg(my_handle_p, snd_msg_buf, input_snd_count);
 	
-		if (snd_count != input_snd_count) {
-			printf("incorrect size sent %x instead of %x\n", snd_count,
-				(unsigned int)input_snd_count);
+			if (snd_count != input_snd_count) {
+				printf("incorrect size sent %x instead of %x\n", snd_count,
+					(unsigned int)input_snd_count);
+			}
 		}
 	
 	}
