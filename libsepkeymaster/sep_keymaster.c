@@ -59,7 +59,7 @@ void print_buf(char *prompt, uint8_t buf[], uint32_t size) {
         } else {
             len = 0;
             for (j = i; j < size; j++) {
-                len += snprintf(s + len, 2 * sizeof(uint8_t) + 1, "%02x ",
+                len += snprintf(s + len, 128 - len, "%02x ",
                         buf[j]);
             }
             LOGERR("%s", s);
@@ -153,15 +153,10 @@ sep_keymaster_return_t import_keypair_cmd_buf(
 
     fw_cmd->KeySize = rsa_key->modulus_length;
     memcpy(fw_cmd->Modulus, rsa_key->bytes, rsa_key->modulus_length);
-    if (3 == rsa_key->public_exponent_length) {
-        memcpy(fw_cmd->PublicExponent + 1,
-                rsa_key->bytes + rsa_key->modulus_length,
-                rsa_key->public_exponent_length);
-        fw_cmd->PublicExponent[0] = 0; //Adding leading zeros does not change the value of an integer
-    } else {
-        memcpy(fw_cmd->PublicExponent, rsa_key->bytes + rsa_key->modulus_length,
-                rsa_key->public_exponent_length);
-    }
+    memset(fw_cmd->PublicExponent, 0, ANDROID_HECI_KEYMASTER_PUBLIC_EXPONENT_MAX_SIZE);
+    memcpy(fw_cmd->PublicExponent + ANDROID_HECI_KEYMASTER_PUBLIC_EXPONENT_MAX_SIZE - rsa_key->public_exponent_length,
+            rsa_key->bytes + rsa_key->modulus_length,
+            rsa_key->public_exponent_length);
     memcpy(fw_cmd->PrivateExponent,
             rsa_key->bytes + rsa_key->modulus_length
                     + rsa_key->public_exponent_length,
@@ -469,6 +464,9 @@ sep_keymaster_return_t set_response_status_and_data(const uint8_t * response,
             caller_rsp->rsp_result_and_data_length =
                     sizeof(intel_keymaster_result_t);
 
+            //Set the verification result
+            caller_rsp->result = fw_rsp->Verified ? KEYMASTER_RESULT_SUCCESS : KEYMASTER_RESULT_FAILURE;
+
             //Set the response length
             *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         }
@@ -480,21 +478,34 @@ sep_keymaster_return_t set_response_status_and_data(const uint8_t * response,
         break;
     case ANDROID_HECI_AGENT_RESPONSE_CODE_FAILURE:
         caller_rsp->result = KEYMASTER_RESULT_FAILURE;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         break;
     case ANDROID_HECI_AGENT_RESPONSE_CODE_INVALID_PARAMS:
         caller_rsp->result = KEYMASTER_RESULT_INVALID_INPUT;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         break;
     case ANDROID_HECI_AGENT_RESPONSE_CODE_NOT_SUPPORTED:
         caller_rsp->result = KEYMASTER_RESULT_NOT_SUPPORTED;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         break;
     case ANDROID_HECI_AGENT_RESPONSE_CODE_UNKNOWN_CMD:
         caller_rsp->result = KEYMASTER_RESULT_FAILURE;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         break;
     case ANDROID_HECI_AGENT_RESPONSE_INVALID_MSG_FORMAT:
         caller_rsp->result = KEYMASTER_RESULT_INVALID_INPUT;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
         break;
     default:
-        break;      //TODO: do something here?
+        caller_rsp->result = KEYMASTER_RESULT_FAILURE;
+        caller_rsp->rsp_result_and_data_length = sizeof(intel_keymaster_result_t);
+        *rsp_length = sizeof(intel_keymaster_firmware_rsp_t);
+        break;
     }
 
     result = SEP_KEYMASTER_SUCCESS;
