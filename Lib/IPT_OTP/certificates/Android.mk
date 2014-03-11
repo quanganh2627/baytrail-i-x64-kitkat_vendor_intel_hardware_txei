@@ -2,7 +2,7 @@
 # IHA library will be built only when IPT is enabled
 #
 
-LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
 #
 # Install the prebuilt IHA library
@@ -52,13 +52,13 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_ETC)/security/EPID_certs
 include $(BUILD_PREBUILT)
 
 define build_single_x509_cert
-	include $(CLEAR_VARS)
-	LOCAL_MODULE := Group_$(1)_Public_Key.cer
-	LOCAL_SRC_FILES := Group_$(1)_Public_Key.cer
-	LOCAL_MODULE_TAGS := optional
-	LOCAL_MODULE_CLASS := ETC
-	LOCAL_MODULE_PATH := $(TARGET_OUT_ETC)/security/EPID_certs
-	include $(BUILD_PREBUILT)
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := Group_$(1)_Public_Key.cer
+ LOCAL_SRC_FILES := Group_$(1)_Public_Key.cer
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_MODULE_CLASS := ETC
+ LOCAL_MODULE_PATH := $(TARGET_OUT_ETC)/security/EPID_certs
+ include $(BUILD_PREBUILT)
 endef
 
 X509_CERT_LIST :=  1244                2167 2168 2169 \
