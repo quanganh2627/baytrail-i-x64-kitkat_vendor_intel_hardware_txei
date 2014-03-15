@@ -332,7 +332,7 @@ int get_customer_data(const uint8_t uiFieldIndex, void **const pvAdcFieldData )
         /*
          *      Sanity check
          */
-        if(!( ACD_MIN_FIELD_INDEX < uiFieldIndex && ACD_MAX_FIELD_INDEX > uiFieldIndex ))
+        if(!( (ACD_MIN_FIELD_INDEX <= uiFieldIndex) && (ACD_MAX_FIELD_INDEX >= uiFieldIndex )))
         {
                 LOGERR( "field index %u is illegal.\n", uiFieldIndex );
                 ret = ACD_READ_ERROR_ILLEGAL_INPUT_PARAMETER;
