@@ -29,10 +29,11 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libutils \
     libbinder \
-    libandroid_runtime \
     libnativehelper
+
 LOCAL_C_INCLUDES := \
     frameworks/base/include \
     $(TARGET_OUT_HEADERS)/chaabi/Lib/inc \
-    $(JNI_H_INCLUDE)
+    $(JNI_H_INCLUDE) \
+    $(LOCAL_PATH)/../../../Lib/sec_tool_lib/inc
 include $(BUILD_SHARED_LIBRARY)

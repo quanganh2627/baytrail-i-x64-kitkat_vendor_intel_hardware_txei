@@ -1,5 +1,5 @@
 # Build the components in this subtree
 # only for platforms with trusted execution engine
-ifeq ($(BUILD_WITH_SECURITY_FRAMEWORK), txei)
+ifeq ($(filter $(TARGET_BOARD_PLATFORM),baytrail cherrytrail braswell),$(TARGET_BOARD_PLATFORM))
 include $(call all-subdir-makefiles)
 endif

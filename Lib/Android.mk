@@ -41,7 +41,6 @@ LOCAL_SRC_FILES += \
     sec_tool_lib/src/umip_access.c \
     common/src/tee_if.c
 LOCAL_CFLAGS := -DBAYTRAIL -DACD_WIPE_TEST
-LOCAL_STATIC_LIBRARIES := CC6_ALL_BASIC_LIB
 LOCAL_SHARED_LIBRARIES := libcutils libc libtxei
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/inc \
     $(LOCAL_PATH)/sec_tool_lib/inc \

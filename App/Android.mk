@@ -21,7 +21,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_SRC_FILES := sec_tool/sec_tools_app.c
 LOCAL_STATIC_LIBRARIES := \
-    CC6_TXEI_UMIP_ACCESS CC6_ALL_BASIC_LIB \
+    CC6_TXEI_UMIP_ACCESS \
     liblog libcutils libc libtxei libtxeimiscutils
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/inc \

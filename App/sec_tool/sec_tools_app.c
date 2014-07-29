@@ -26,40 +26,14 @@
 #include <stdbool.h>
 
 /* define LOG related macros before including the log header file */
+#define DEBUG
 #define LOG_TAG      "CC6SECUTIL-app"
 #include "cutils/log.h"
+#include "sepdrm-log.h"
 #include "umip_access.h"
 #include "misc_utils.h"
 #include "txei.h"
 
-//#define DEBUG
-#ifdef DEBUG
-# define LOGERR(fmt, arg...)						\
-	do {								\
-		LOGE("%s():%d: ERROR - "				\
-		     fmt, __func__, __LINE__, ##arg );			\
-		fprintf(stderr, "%s():%d: ERROR - "			\
-			fmt, __func__, __LINE__, ##arg );		\
-	} while(0)
-
-# define LOGDBG(fmt, arg...)						\
-	do {								\
-		LOGD("%s():%d:" fmt, __func__, __LINE__, ##arg );	\
-	} while(0)
-#else
-# define LOGDBG(fmt, arg...)						\
-	do {								\
-	} while(0)
-
-# define LOGERR(fmt, arg...)				\
-	do {						\
-		LOGE("%s():%d: ERROR - "		\
-		     fmt, __func__, __LINE__, ##arg );	\
-		fprintf(stderr, "ERROR - "		\
-			fmt,  ##arg );			\
-	} while(0)
-
-#endif
 
 /* ====================
  * Constants

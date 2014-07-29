@@ -1,7 +1,7 @@
 #
 # Build the key master HAL library
 #
-ifeq ($(BUILD_WITH_SECURITY_FRAMEWORK),txei)
+ifeq ($(filter $(TARGET_BOARD_PLATFORM),baytrail cherrytrail braswell),$(TARGET_BOARD_PLATFORM))
 
 LOCAL_PATH := $(call my-dir)
 
