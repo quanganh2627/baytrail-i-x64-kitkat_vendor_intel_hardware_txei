@@ -6,6 +6,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := com.intel.security.lib.sepdrmjni
+LOCAL_REQUIRED_MODULES := com.intel.security.lib.sepdrmjni.xml
 LOCAL_SRC_FILES := $(call all-java-files-under,.)
 include $(BUILD_JAVA_LIBRARY)
 
