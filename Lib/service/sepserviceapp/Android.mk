@@ -10,7 +10,7 @@ LOCAL_REQUIRED_MODULES := \
 LOCAL_JAVA_LIBRARIES := \
     com.intel.security.service.sepmanager \
     com.intel.security.lib.sepdrmjni \
-    core \
+    core-libart \
     framework
 LOCAL_SDK_VERSION := current
 LOCAL_PROGUARD_ENABLED := disabled
