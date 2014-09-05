@@ -626,7 +626,19 @@ class ISEPServiceImpl extends ISEPService.Stub {
 			if (e instanceof IhaJniException) {
 				SetLastError( (IhaJniException) e );
 			}
-			Log.e(TAG, "Interface2 IHAGetOTP failed" + IHAError );
+			Log.e(TAG, "Interface2 IHAGetOTP failed " + IHAError + ", copying expected len anyway");
+			Log.d(TAG, "after ll call: OTP array len = " + len);
+			for (i = 0; i < len; i++ ) {
+				Log.d(TAG, "OTP(short)["+i+"]=" + saExpectedOtpLength[i]);
+				iaExpectedOtpLength[i] = saExpectedOtpLength[i];
+				Log.d(TAG, "OTP(int)["+i+"]=" + iaExpectedOtpLength[i]);
+			}
+			Log.d(TAG, "after ll call: EETL array len = " + len1);
+			for (i = 0; i < len1; i++ ) {
+				Log.d(TAG, "EETL(short)["+i+"]=" + saExpectedEncTokenLen[i]);
+				iaExpectedEncTokenLength[i] = saExpectedEncTokenLen[i];
+				Log.d(TAG, "EETL(int)["+i+"]=" + iaExpectedEncTokenLength[i]);
+			}
 			return null;
 		}
 	}
