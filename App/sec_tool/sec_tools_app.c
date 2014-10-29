@@ -31,6 +31,7 @@
 #include "umip_access.h"
 #include "misc_utils.h"
 #include "txei.h"
+#include "sepdrm-log.h"
 
 //#define DEBUG
 #ifdef DEBUG

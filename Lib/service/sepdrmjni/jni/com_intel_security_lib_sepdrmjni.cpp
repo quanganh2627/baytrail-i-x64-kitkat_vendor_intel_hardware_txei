@@ -23,6 +23,7 @@
 #define LOG_TAG "sepdrmJNI"
 #include "cutils/log.h"
 #include "com_intel_security_lib_sepdrmJNI.h"
+#include "sepdrm-log.h"
 
 /* todo: sepdrm.h (exported by libsepdrm) is not supported by all platforms.
  * As it is for testing purpose only, we simply skip it and may re-enable it later.
@@ -37,12 +38,12 @@ namespace com_intel_security_lib {
 
 	uint32_t status = SERVICE_FAIL_UNSUPPORTED;
 
-	LOGD("ENTER: %s\n",__func__);
+	LOGDBG("ENTER: %s\n",__func__);
 
 	/* todo: Drm_Library_Init (in libsepdrm) is not supported by all platforms.
 	 * As it is for testing purpose only, we simply skip it and may re-enable it later.
 	 */
-	LOGD("Drm_Library_Init not supported\n");
+	LOGDBG("Drm_Library_Init not supported\n");
 	status = SERVICE_SUCCESSFUL;
 	/* Initialize the Driver*/
 //	status = Drm_Library_Init();
@@ -66,12 +67,12 @@ namespace com_intel_security_lib {
 	uint32_t randomValue = 0;
 	uint32_t status = SERVICE_FAIL_UNSUPPORTED;
 
-	LOGD("ENTER: %s\n",__func__);
+	LOGDBG("ENTER: %s\n",__func__);
 
 	/* todo: Drm_GetRandom (in libsepdrm) is not supported by all platforms.
 	 * As it is for testing purpose only, we simply skip it and may re-enable it later.
 	 */
-	LOGD("Drm_GetRandom not supported\n");
+	LOGDBG("Drm_GetRandom not supported\n");
 //	status = Drm_GetRandom((uint8_t*) &randomValue, sizeof(randomValue));
 //	if (DRM_SUCCESSFUL != status) {
 //		LOGE("Chaabi returned error value of 0x%X when reading "
