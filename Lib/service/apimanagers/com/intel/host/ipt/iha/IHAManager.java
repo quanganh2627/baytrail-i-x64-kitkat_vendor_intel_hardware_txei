@@ -786,14 +786,24 @@ public class IHAManager {
 	    // Check for IHA Error from last IHA ISepService call.
 	    int err = IHAGetLastError();
 	    if (err != IHA_RET_S_OK) {
-		throw new IhaException("IHAGetOTP failed", err);
+		throw new IhaException("IHAGetOTP failed ", err);
 	    }
 	    return getOTP;
 
 	} catch (RemoteException e) {
 	    e.printStackTrace();
-	    Log.d(TAG, "IHAGetOtp failed");
-	    throw new RuntimeException("Interface1 IHAGetOTP failed", e);
+	    Log.d(TAG, "IHAGetOtp failed, copying expected len anyway");
+	    for ( i = 0; i < len; i++ ) {
+			Log.d(TAG, "OTP(int)["+i+"]=" + iaExpectedOtpLength[i]);
+			saExpectedOtpLength[i] = (short) iaExpectedOtpLength[i];
+			Log.d(TAG, "OTP(short)["+i+"]=" + saExpectedOtpLength[i]);
+	    }
+	    for ( i = 0; i < len1; i++ ) {
+			Log.d(TAG, "EETL(int)["+i+"]=" + iaExpectedEncTokenLen[i]);
+			saExpectedEncTokenLength[i] = (short) iaExpectedEncTokenLen[i];
+			Log.d(TAG, "EETL(short)["+i+"]=" + saExpectedEncTokenLength[i]);
+	    }
+	    throw new RuntimeException("Interface1 IHAGetOTP failed ", e);
 	}
     }
 

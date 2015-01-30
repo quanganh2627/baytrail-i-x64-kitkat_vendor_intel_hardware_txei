@@ -20,18 +20,15 @@
 package com.intel.security.service;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.util.Log;
 import com.intel.security.service.ISEPService;
-import com.intel.security.lib.sepdrmJNI;
 import com.intel.host.ipt.iha.IhaJni;
 import com.intel.host.ipt.iha.IhaJniException;
 
 class ISEPServiceImpl extends ISEPService.Stub {
 	private static final String TAG = ISEPServiceImpl.class.getSimpleName();
 	private final Context context;
-	private static final int DRM_SUCCESS = 0;
 	private final static int IHA_RET_S_OK = 0;
 	private static int IHAError = IHA_RET_S_OK;
 	private IhaJni iha;
@@ -41,30 +38,6 @@ class ISEPServiceImpl extends ISEPService.Stub {
 
 		iha = new IhaJni();
 	}
-
-	public void initDrmLibrary() {
-		Log.d(TAG, "initDrmLibrary()");
-		/*
-		  if (this.context.checkCallingOrSelfPermission(Manifest.permission.SEP_ACCESS) !=
-		  PackageManager.PERMISSION_GRANTED) {
-		  throw new SecurityException("Requires SEP_ACCESS permission");
-		  }
-		*/
-		int status = sepdrmJNI.libraryInit();
-		if (status != DRM_SUCCESS) {
-			//FIXME: Exceptions cannot be thrown across process boundaries!
-			throw new RuntimeException("Library Initialization failed (0x" +
-						   Integer.toHexString(status) + ")");
-		}
-	}
-
-	public long getRandomNumber() throws RemoteException {
-		Log.d(TAG, "getRandomNumber()");
-
-		return sepdrmJNI.getRandomNumber();
-	}
-
-
 
 	/**
 	 * Initialize internal dependencies. Should be called first and only once
@@ -626,7 +599,19 @@ class ISEPServiceImpl extends ISEPService.Stub {
 			if (e instanceof IhaJniException) {
 				SetLastError( (IhaJniException) e );
 			}
-			Log.e(TAG, "Interface2 IHAGetOTP failed" + IHAError );
+			Log.e(TAG, "Interface2 IHAGetOTP failed " + IHAError + ", copying expected len anyway");
+			Log.d(TAG, "after ll call: OTP array len = " + len);
+			for (i = 0; i < len; i++ ) {
+				Log.d(TAG, "OTP(short)["+i+"]=" + saExpectedOtpLength[i]);
+				iaExpectedOtpLength[i] = saExpectedOtpLength[i];
+				Log.d(TAG, "OTP(int)["+i+"]=" + iaExpectedOtpLength[i]);
+			}
+			Log.d(TAG, "after ll call: EETL array len = " + len1);
+			for (i = 0; i < len1; i++ ) {
+				Log.d(TAG, "EETL(short)["+i+"]=" + saExpectedEncTokenLen[i]);
+				iaExpectedEncTokenLength[i] = saExpectedEncTokenLen[i];
+				Log.d(TAG, "EETL(int)["+i+"]=" + iaExpectedEncTokenLength[i]);
+			}
 			return null;
 		}
 	}

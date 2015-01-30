@@ -31,27 +31,6 @@ package com.intel.security.service;
  */
 interface ISEPService {
 
-    /*
-     * DRM Library Initialization
-     * Description:
-     * 	Initializes the SEP driver for DRM library use.
-     *
-     *      Return value of DRM_SUCCESSFUL means the SEP driver was initialized.
-     */
-    void initDrmLibrary();
-    /**
-     * Test for conneciton to Chaabi.
-     */
-    long getRandomNumber();
-    /** TODO: Add
-     * sec_result_t Drm_GetRandom( uint8_t * const pRandom, const
-     * uint32_t bufLen )
-     */
-
-
-    /** TODO: add the drm-lib.c APIs */
-
-
     /**
      * Initialize internal dependencies. Should be called first and only once
      * after loading the iha library. \n

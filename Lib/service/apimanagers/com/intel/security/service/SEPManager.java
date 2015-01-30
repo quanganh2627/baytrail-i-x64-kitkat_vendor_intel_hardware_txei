@@ -31,52 +31,15 @@ import android.util.Log;
  */
 public class SEPManager {
     private static final String TAG = SEPManager.class.getSimpleName();
-    private static final String REMOTE_SERVICE_NAME = ISEPService.class.getName();
-    private static boolean isInitialized = false;
-    ISEPService service;
 
+    @Deprecated
     public static SEPManager getInstance() {
 	Log.i(TAG, "SEPManager.getInstance()");
 	return new SEPManager();
     }
 
-
-    private SEPManager() {
-	Log.d(TAG, "Connecting to ISEPService by name [" + REMOTE_SERVICE_NAME + "]");
-	this.service = ISEPService.Stub.asInterface(ServiceManager.getService(REMOTE_SERVICE_NAME));
-	if (this.service == null) {
-	    throw new IllegalStateException("Failed to find ISEPService by name [" + REMOTE_SERVICE_NAME + "]");
-	}
-    }
-
+    @Deprecated
     public void initLibrary() {
-
 	Log.i(TAG, "initLibrary");
-	if (!isInitialized) {
-	    try {
-		this.service.initDrmLibrary();
-		isInitialized = true;
-	    } catch (RemoteException e) {
-		e.printStackTrace();
-		throw new RuntimeException("initLibrary failed");
-	    }
-	}
-
-
     }
-
-    public long getRandomNumber() {
-
-	Log.i(TAG, "getRandomNumber");
-	try {
-
-	    initLibrary();
-
-	    return this.service.getRandomNumber();
-	} catch (RemoteException e) {
-	    e.printStackTrace();
-	    throw new RuntimeException("getRandomNumber failed", e);
-	}
-    }
-
 }
