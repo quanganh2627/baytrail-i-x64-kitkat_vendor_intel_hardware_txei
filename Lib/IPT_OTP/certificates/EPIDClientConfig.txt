@@ -1,7 +1,3 @@
 epidparamcertfilepath = /system/etc/security/EPID_certs/epid_paramcert.dat
-prodgrouplegacycertfilepath = /system/etc/security/EPID_certs/PAVP_Group_VLV2EPIDPROD_Public_Keys.bin
-byt_prod_groupset2_cert_file_path = /system/etc/security/EPID_certs/PAVP_Group_BYTEPIDPROD_Public_Keys.bin
-byt_preprod_grouplegacy_cert_file_path = /system/etc/security/EPID_certs/PAVP_Group_VLV2EPIDPREPROD_Public_Keys.bin
-cht_preprod_group_cert_file_path = /system/etc/security/EPID_certs/PAVP_Group_CHTEPIDPREPROD_Public_Keys.bin
-cht_prod_groupset1_cert_file_path = /system/etc/security/EPID_certs/PAVP_Group_CHTEPIDPROD_Public_Keys.bin
 x509groupcertfilepath = /system/etc/security/EPID_certs/
+legacycertmappingfilepath = /system/etc/security/EPID_certs/BaytrailCherrytrail.csv
