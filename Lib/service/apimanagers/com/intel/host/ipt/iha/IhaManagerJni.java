@@ -1,58 +1,59 @@
-/*************************************************************************
- **     Copyright (c) 2015 Intel Corporation. All rights reserved.      **
- **                                                                     **
- ** This Software is licensed pursuant to the terms of the INTEL        **
- ** MOBILE COMPUTING PLATFORM SOFTWARE LIMITED LICENSE AGREEMENT        **
- ** (OEM / IHV / ISV Distribution & End User)                           **
- **                                                                     **
- ** The above copyright notice and this permission notice shall be      **
- ** included in all copies or substantial portions of the Software.     **
- ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,     **
- ** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF  **
- ** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND               **
- ** NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS **
- ** BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN  **
- ** ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN   **
- ** CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE    **
- ** SOFTWARE.                                                           **
- **                                                                     **
- *************************************************************************/
+/*
+********************************************************************************
+**    Intel Architecture Group
+**    Copyright (C) 2015 Intel Corporation
+********************************************************************************
+**
+**    INTEL CONFIDENTIAL
+**    This file, software, or program is supplied under the terms of a
+**    license agreement and/or nondisclosure agreement with Intel Corporation
+**    and may not be copied or disclosed except in accordance with the
+**    terms of that agreement.  This file, software, or program contains
+**    copyrighted material and/or trade secret information of Intel
+**    Corporation, and must be treated as such.  Intel reserves all rights
+**    in this material, except as the license agreement or nondisclosure
+**    agreement specifically indicate.
+**
+**    All rights reserved.  No part of this program or publication
+**    may be reproduced, transmitted, transcribed, stored in a
+**    retrieval system, or translated into any language or computer
+**    language, in any form or by any means, electronic, mechanical,
+**    magnetic, optical, chemical, manual, or otherwise, without
+**    the prior written permission of Intel Corporation.
+**
+**    Intel makes no warranty of any kind regarding this code.  This code
+**    is provided on an "As Is" basis and Intel will not provide any support,
+**    assistance, installation, training or other services.  Intel does not
+**    provide any updates, enhancements or extensions.  Intel specifically
+**    disclaims any warranty of merchantability, noninfringement, fitness
+**    for any particular purpose, or any other warranty.
+**
+**    Intel disclaims all liability, including liability for infringement
+**    of any proprietary rights, relating to use of the code.  No license,
+**    express or implied, by estoppel or otherwise, to any intellectual
+**    property rights is granted herein.
+**/
+
 package com.intel.host.ipt.iha;
 
-import android.os.IBinder;
-import android.os.RemoteException;
-import android.os.ServiceManager;
-import android.util.Log;
-
-
 /**
- * @author nshuster
- *
- */
-public class IHAManager {
-    private static final String TAG = IHAManager.class.getSimpleName() + "N";
-    private static boolean isInitialized = false;
-    private final static int MAX_APPNAME_LENGTH = 300;
-    private final static int MAX_SEND_RECV_DATA_LENGTH = 5000;
-    private final static int MAX_ENCR_TOKEN_LENGTH = 300;
-    private final static int MAX_SRC_FILE_LENGTH = 300;
-    private final static int MAX_GET_CAPS_STRING_LENGTH = 300;
-    private final static int MAX_SVP_MESSAGE_LENGTH = 5000;
-    private final static int IHA_RET_S_OK = 0;
-    private static int IHAManagerError = IHA_RET_S_OK;
-    private final static int INVALID_INPUT = 13;
-
-    public static IHAManager getInstance() {
-        Log.i(TAG, "IHAManager.getInstance() -- ");
-        return new IHAManager();
+********************************************************************************
+**
+**    @file IhaJni.java
+**
+**    @brief  Defines the JNI version of the Intel IPT Host Agent (IHA) API
+**
+**    @author Ranjit Narjala
+**
+********************************************************************************
+*/
+public class IhaManagerJni
+{
+    static {
+        System.loadLibrary("ihamanagerjni");
     }
 
-
-    private IHAManager() {
-    }
-
-
-    /**
+    /**************************************************************************
      * Initialize internal dependencies. Should be called first and only once
      * after loading the iha library. \n
      * Please see the IHA C interface documentation for error codes thrown via
@@ -62,17 +63,10 @@ public class IHAManager {
      *
      * @return  void
      *****************************************************************************/
-    public void IHAInit() {
-        Log.v(TAG, "IHAInit");
-        try {
-            IhaManagerJni.IHAInit();
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAInit failed", e);
-        }
-    }
+    public static native void IHAInit() throws IhaException;
 
-    /**
+
+    /**************************************************************************
      * Deinitialize IHA library. Should be called before unloading the DLL. \n
      * Please see the IHA C interface documentation for error codes thrown via
      * IhaException.
@@ -81,55 +75,51 @@ public class IHAManager {
      *
      * @return  void
      *****************************************************************************/
-    public void IHADeInit() {
-        Log.v(TAG, "IHADeInit");
+    public static native void IHADeInit() throws IhaException;
 
-        try {
-            IhaManagerJni.IHADeInit();
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHADeInit failed", e);
-        }
-    }
 
-    public int IHAStartProvisioning(String strAppName) {
-        Log.v(TAG, "IHAStartProvisioning");
+    /**************************************************************************
+     * Initiate a provisioning session. This call will initialize provisioning
+     * in the embedded app, and the session handle returned must be used in
+     * subsequent provisioning-related calls. \n
+     * Please see the IHA C interface documentation for error codes thrown via
+     * IhaException.
+     *
+     * @param [in]      strAppName: String identifying the embedded app in the
+     *                  chipset.
+     *
+     * @return          Session handle.
+     *****************************************************************************/
+    public static native int IHAStartProvisioning( String strAppName ) throws IhaException;
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
+    /**************************************************************************
+     * Once provisioning is complete, this function must be called to ensure
+     * state is cleaned up, and to obtain the encrypted Token Record from the
+     * embedded app. The encrypted Token Record that is received must be stored
+     * by the application, and supplied again in a call such as IHA_GetOTP(). \n
+     * Please see the IHA C interface documentation for error codes thrown via
+     * IhaException.
+     *
+     * @param [in]      strAppName: String identifying the embedded app in the
+     *                  chipset.
+     * @param [in]      iSessionHandle: SessionHandle identifying a provisioning
+     *                  sequence.
+     * @param [in, out] saExpectedDataLen: Short 1 byte array holding the expected
+     *                  length of the output encrypted token record.  This field
+     *                  holds the actual length of the data returned if expected
+     *                  length is sufficient, and required length if expected
+     *                  length is insufficient.
+     *
+     * @return          Byte array containing the encrypted token record.
+     *****************************************************************************/
+    public static native byte[] IHAEndProvisioning(
+                                                  String strAppName,
+                                                  int iSessionHandle,
+                                                  short[] saExpectedDataLen)
+    throws IhaException;
 
-        try {
-            return IhaManagerJni.IHAStartProvisioning( strAppName );
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAStartProvisioning failed", e);
-        }
-    }
 
-    public byte[] IHAEndProvisioning( String strAppName, int iSessionHandle,
-                                      short[] saExpectedTokenLen ) {
-        Log.v(TAG, "IHAEndProvisioning");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (saExpectedTokenLen.length == 0 || saExpectedTokenLen.length > MAX_ENCR_TOKEN_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedTokenLenApp array length");
-        }
-        byte[] orig_encrToken;
-        try {
-            orig_encrToken = IhaManagerJni.IHAEndProvisioning( strAppName, iSessionHandle, saExpectedTokenLen);
-            Log.d(TAG, "IHAEndProvisioning returning token len: " + saExpectedTokenLen[0]);
-            return orig_encrToken;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAEndProvisioning failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to send data to the embedded app in the FW. \n
      * Please see the IHA C interface documentation for error codes thrown via
      * IhaException.
@@ -144,37 +134,12 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    public void IHASendData( String strAppName,
-                             int iSessionHandle,
-                             short sDataType,
-                             byte[] baInData) {
+    public static native void IHASendData( String strAppName,
+                                           int iSessionHandle,
+                                           short sDataType,
+                                           byte[] baInData) throws IhaException;
 
-
-        Log.v(TAG, "IHASendData");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sDataType < 0) {
-            throw new RuntimeException("Invalid DataType value");
-        }
-        if (baInData.length == 0 || baInData.length > MAX_SEND_RECV_DATA_LENGTH) {
-            throw new RuntimeException("Invalid InData array length");
-        }
-
-        try {
-
-            IhaManagerJni.IHASendData( strAppName, iSessionHandle, sDataType, baInData );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHASendData failed", e);
-        }
-
-    }
-
-
-    /**
+    /**************************************************************************
      * This function is used to obtain data from the embedded app in the FW. \n
      * Please see the IHA C interface documentation for error codes thrown via
      * IhaException.
@@ -192,34 +157,15 @@ public class IHAManager {
      *
      * @return          Byte array containing the data received from the FW.
      *****************************************************************************/
-    public byte[] IHAReceiveData( String strAppName, int iSessionHandle,
-                                  short sDataType, short[] saExpectedDataLen) {
-
-        Log.v(TAG, "IHAReceiveData");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sDataType < 0) {
-            throw new RuntimeException("Invalid DataType value");
-        }
-        if (saExpectedDataLen.length == 0 || saExpectedDataLen.length > MAX_SEND_RECV_DATA_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedDataLen array length");
-        }
-
-        try {
-            byte[] recvData =  IhaManagerJni.IHAReceiveData( strAppName, iSessionHandle,
-                                                             sDataType, saExpectedDataLen );
-            return recvData;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHASendData failed", e);
-        }
-    }
+    public static native byte[] IHAReceiveData(
+                                              String strAppName,
+                                              int iSessionHandle,
+                                              short sDataType,
+                                              short[] saExpectedDataLen)
+    throws IhaException;
 
 
-    /**
+    /**************************************************************************
      * This function is used to send IPT-specific provisioning data to the
      * embedded app in the FW. \n
      * Please see the IHA C interface documentation for error codes thrown via
@@ -233,29 +179,14 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    public void IHAProcessSVPMessage(String strAppName, int iSessionHandle,
-                                     byte[] baInData) {
-        Log.v(TAG, "IHAProcessSVPMessage");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (baInData.length == 0 || baInData.length > MAX_SVP_MESSAGE_LENGTH) {
-            throw new RuntimeException("Invalid InData array length");
-        }
-
-        try {
-
-            IhaManagerJni.IHAProcessSVPMessage( strAppName, iSessionHandle, baInData);
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAProcessSVPMessage failed", e);
-        }
-    }
+    public static native void IHAProcessSVPMessage(
+                                                  String strAppName,
+                                                  int iSessionHandle,
+                                                  byte[] baInData)
+    throws IhaException;
 
 
-    /**
+    /**************************************************************************
      * This function is used to obtain IPT-specific provisioning data from the
      * embedded app in the FW. \n
      * Please see the IHA C interface documentation for error codes thrown via
@@ -273,28 +204,14 @@ public class IHAManager {
      *
      * @return          Byte array containing the data returned from the FW.
      *****************************************************************************/
-    public byte[] IHAGetSVPMessage( String strAppName, int iSessionHandle,
-                                    short[] saExpectedDataLen) {
+    public static native byte[] IHAGetSVPMessage(
+                                                String strAppName,
+                                                int iSessionHandle,
+                                                short[] saExpectedDataLen)
+    throws IhaException;
 
-        Log.v(TAG, "IHAGetSVPMessage");
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (saExpectedDataLen.length == 0 || saExpectedDataLen.length > MAX_SVP_MESSAGE_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedDataLen array length");
-        }
-
-        try {
-            byte[] getSVPMsg =  IhaManagerJni.IHAGetSVPMessage( strAppName, iSessionHandle, saExpectedDataLen);
-            return getSVPMsg;
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAGetSVPMessage failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to send and receive data to and from the embedded app
      * in the FW. \n
      * This API was added in IPT 2.0, and is only to be used by those apps that do
@@ -317,38 +234,16 @@ public class IHAManager {
      *
      * @return          Byte array containing the data returned from the FW.
      *****************************************************************************/
-    public byte[] IHASendAndReceiveData(String strAppName,
-                                        int iSessionHandle, short sDataType, byte[] baInData,
-                                        short[] saExpectedOutDataLen) {
-
-        Log.v(TAG, "IHASendAndReceiveData");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sDataType < 0) {
-            throw new RuntimeException("Invalid DataType value");
-        }
-        if (baInData.length == 0 || baInData.length > MAX_SEND_RECV_DATA_LENGTH) {
-            throw new RuntimeException("Invalid InData array length");
-        }
-        if (saExpectedOutDataLen.length == 0 || saExpectedOutDataLen. length > MAX_SEND_RECV_DATA_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedOutDataLen array length");
-        }
+    public static native byte[] IHASendAndReceiveData(
+                                                     String strAppName,
+                                                     int iSessionHandle,
+                                                     short sDataType,
+                                                     byte[] baInData,
+                                                     short[] saExpectedOutDataLen)
+    throws IhaException;
 
 
-        try {
-            byte[] sendRecvData = IhaManagerJni.IHASendAndReceiveData( strAppName, iSessionHandle, sDataType,
-                                                                       baInData, saExpectedOutDataLen);
-            return sendRecvData;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHASendAndReceiveData failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to obtain capabilities of embedded app, including
      * version information. \n
      * This API was added in IPT 2.0, and is only to be used by those apps that do
@@ -359,8 +254,8 @@ public class IHAManager {
      * @param [in]      strAppName: String identifying the embedded app in the
      *                  chipset.
      * @param [in]      sType: Type of capability information requested. Can be: \n
-     1: Embedded App Version \n
-     2: Embedded App Security Version.
+     *   1: Embedded App Version \n
+     *   2: Embedded App Security Version.
      * @param [in, out] saExpectedDataLen: Short 1 byte array holding the
      *                  expected length of the output data.  This field holds the
      *                  actual length of the data returned if expected length is
@@ -373,32 +268,14 @@ public class IHAManager {
      *
      * @return          Byte array containing the data returned from the FW.
      *****************************************************************************/
-    public byte[] IHAGetCapabilities( String strAppName, short sType, short[] saExpectedDataLen) {
-
-        Log.v(TAG, "IHAGetCapabilities");
-
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sType < 0) {
-            throw new RuntimeException("Invalid Type value");
-        }
-        if (saExpectedDataLen.length == 0 || saExpectedDataLen.length > MAX_GET_CAPS_STRING_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedDataLen array length");
-        }
-
-        try {
-            byte[] getCaps =  IhaManagerJni.IHAGetCapabilities( strAppName, sType, saExpectedDataLen);
-            return getCaps;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAGetCapabilities failed", e);
-        }
-    }
+    public static native byte[] IHAGetCapabilities(
+                                                  String strAppName,
+                                                  short sType,
+                                                  short[] saExpectedDataLen)
+    throws IhaException;
 
 
-    /**
+    /**************************************************************************
      * This function is used to retrieve the version of the IHA DLL. \n
      * This API was added in IPT 2.0, and is only to be used by those apps that do
      * not need to run on 2011 platforms. \n
@@ -410,20 +287,11 @@ public class IHAManager {
      * @return  Version of the IHA DLL. Please see the IHA C interface
      *          documentation for details on the parsing this int.
      *****************************************************************************/
-    public int IHAGetVersion() {
+    public static native int IHAGetVersion()
+    throws IhaException;
 
-        Log.v(TAG, "IHAGetVersion");
-        try {
 
-            return IhaManagerJni.IHAGetVersion();
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAGetVersion failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to load the embedded app into the FW. This is
      * typically called the very first time the embedded app is used, if it has not
      * been loaded yet. It is also used every time the embedded app needs to be
@@ -443,30 +311,13 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    public static native void jni_IHAInstall( String strAppName,
-                                              String strSrcFile) throws IhaException;
-    void IHAInstall( String strAppName, String strSrcFile) {
-
-        Log.v(TAG, "IHAInstall");
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (strSrcFile.length() == 0 || strSrcFile.length() > MAX_SRC_FILE_LENGTH) {
-            throw new RuntimeException("Invalid Source File Name argument");
-        }
-
-        try {
-
-            jni_IHAInstall( strAppName, strSrcFile);
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAInstall failed", e);
-        }
-    }
+    public static native void IHAInstall(
+                                        String strAppName,
+                                        String strSrcFile)
+    throws IhaException;
 
 
-    /**
+    /**************************************************************************
      * This function is used to unload the embedded app from the FW. \n
      * This API was added in IPT 2.0, and is only to be used by those apps that do
      * not need to run on 2011 platforms. \n
@@ -478,23 +329,12 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    void IHAUninstall( String strAppName) {
-        Log.v(TAG, "IHAUninstall");
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
+    public static native void IHAUninstall(
+                                          String strAppName)
+    throws IhaException;
 
-        try {
 
-            IhaManagerJni.IHAUninstall( strAppName );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAUninstall failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to trigger a FW update when an EPID group key
      * revocation is detected. \n
      * This API was added in IPT 2.0, and is only to be used by those apps that do
@@ -506,20 +346,11 @@ public class IHAManager {
      *
      * @return  void
      *****************************************************************************/
-    void IHADoFWUpdate() {
-        Log.v(TAG, "IHADoFWUpdate");
-        try {
-
-            IhaManagerJni.IHADoFWUpdate( );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHADoFWUpdate failed", e);
-        }
-    }
+    public static native void IHADoFWUpdate()
+    throws IhaException;
 
 
-    /**
+    /**************************************************************************
      * This function is used to retrieve an OTP from the embedded OTP App. \n
      * Please see the IHA C interface documentation for error codes thrown via
      * IhaException.
@@ -554,29 +385,15 @@ public class IHAManager {
      *                  greater than 0, the rest of the data in this buffer is the
      *                  output encrypted token.
      *****************************************************************************/
-    public byte[] IHAGetOTP(  String strAppName, int iSessionHandle, byte[] baEncToken,
-                              byte[] baVendorData, short[] saExpectedOtpLength,
-                              short[] saExpectedEncTokenLength) {
+    public static native byte[] IHAGetOTP( String strAppName,
+                                           int iSessionHandle,
+                                           byte[] baEncToken,
+                                           byte[] baVendorData,
+                                           short[] saExpectedOtpLength,
+                                           short[] saExpectedEncTokenLength) throws IhaException;
 
-        Log.v(TAG, "IHAGetOTP");
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-
-        try {
-            byte[] getOTP = IhaManagerJni.IHAGetOTP( strAppName, iSessionHandle, baEncToken,
-                                                     baVendorData, saExpectedOtpLength,
-                                                     saExpectedEncTokenLength );
-            return getOTP;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("Interface1 IHAGetOTP failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to obtain status from the embedded app. \n
      * This is a legacy API, kept for backward compatibility with version 1.x.
      * Should not be used from version 2.0 onwards. \n
@@ -592,27 +409,14 @@ public class IHAManager {
      *
      * @return          Status returned by the FW.
      *****************************************************************************/
-    public int IHAGetOTPSStatus( String strAppName, int iSessionHandle, short sType) {
+    public static native int IHAGetOTPSStatus(
+                                             String strAppName,
+                                             int iSessionHandle,
+                                             short sType)
+    throws IhaException;
 
-        Log.v(TAG, "IHAGetOTPSStatus");
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sType < 0) {
-            throw new RuntimeException("Invalid DataType value");
-        }
-
-        try {
-            return IhaManagerJni.IHAGetOTPSStatus( strAppName, iSessionHandle, sType );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAGetOTPSStatus failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to obtain capabilities of embedded app, including
      * version information. \n
      * This is a legacy API, kept for backward compatibility with version 1.x.
@@ -623,8 +427,8 @@ public class IHAManager {
      * @param [in]      strAppName: String identifying the embedded app in the
      *                  chipset.
      * @param [in]      sType: Type of capability information requested. Can be: \n
-     1: Embedded App Version \n
-     2: Embedded App Security Version.
+     *      1: Embedded App Version \n
+     *      2: Embedded App Security Version.
      * @param [in, out] saExpectedDataLen: Short 1 byte array holding the
      *                  expected length of the output data.  This field holds the
      *                  actual length of the data returned if expected length is
@@ -637,31 +441,14 @@ public class IHAManager {
      *
      * @return          Byte array containing the data returned from the FW.
      *****************************************************************************/
-    public byte[] IHAGetOTPCapabilities( String strAppName, short sType, short[] saExpectedDataLen) {
+    public static native byte[] IHAGetOTPCapabilities(
+                                                     String strAppName,
+                                                     short sType,
+                                                     short[] saExpectedDataLen)
+    throws IhaException;
 
-        Log.v(TAG, "IHAGetOTPCapabilities");
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (sType < 0) {
-            throw new RuntimeException("Invalid DataType value");
-        }
-        if (saExpectedDataLen.length == 0 || saExpectedDataLen.length > MAX_GET_CAPS_STRING_LENGTH) {
-            throw new RuntimeException("Invalid ExpectedDataLen array length");
-        }
-
-        try {
-            byte[] getOtpCaps =  IhaManagerJni.IHAGetOTPCapabilities( strAppName, sType, saExpectedDataLen);
-            return getOtpCaps;
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAGetOTP failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to load the embedded app into the FW. This is
      * typically called the very first time the embedded app is used, if it has not
      * been loaded yet. It is also used every time the embedded app needs to be
@@ -681,27 +468,13 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    void IHAInstallOTPS( String strAppName, String strSrcFile) {
-        Log.v(TAG, "IHAInstallOTPS");
+    public static native void IHAInstallOTPS(
+                                            String strAppName,
+                                            String strSrcFile)
+    throws IhaException;
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        if (strSrcFile.length() == 0 || strSrcFile.length() > MAX_SRC_FILE_LENGTH) {
-            throw new RuntimeException("Invalid Source File Name argument");
-        }
 
-        try {
-
-            IhaManagerJni.IHAInstallOTPS( strAppName, strSrcFile);
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAInstallOTPS failed", e);
-        }
-    }
-
-    /**
+    /**************************************************************************
      * This function is used to unload the embedded app from the FW. \n
      * This is a legacy API, kept for backward compatibility with version 1.x.
      * Has been replaced by IHA_GetCapabilities() in version 2.0 onwards.  \n
@@ -713,22 +486,53 @@ public class IHAManager {
      *
      * @return          void
      *****************************************************************************/
-    public void IHAUninstallOTPS( String strAppName) {
-        Log.v(TAG, "IHAUninstallOTPS");
+    public static native void IHAUninstallOTPS(
+                                              String strAppName)
+    throws IhaException;
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
+    /**************************************************************************
+     * This function is used to register a callback function with the embedded
+     * fw to receive and process notifications from the embedded app. \n
+     * Callbacks can be registered for multiple eApps and the same callback can
+     * service multiple eApps. Only restriction is an app can have just one
+     * callback registered. The callback gets deregistered when the app gets
+     * uninstalled and/or the IHA DLL gets deinitialized.\n
+     * If notification support is required by the IHA application then this
+     * must be called before any other request to the embedded app, else
+     * notification registration will fail.
+     *
+     *
+     * @param [in]      strAppName: String identifying the embedded app in the
+     *                  chipset.
+     * @param [in]      callback: IhaJniCallback object with user implemented
+     *                  callback method
+     *
+     * @return          void
+     *****************************************************************************/
+    // public static native void IHARegisterEventCb( String strAppName,
+    //                        IhaJniCallback callback) throws IhaException;
 
-        try {
-
-            IhaManagerJni.IHAUninstallOTPS( strAppName );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHAUninstallOTPS failed", e);
-        }
-    }
+    /**************************************************************************
+     * This function is used to unregister an existing callback function from
+     * the embedded fw. \n
+     * This API should only be used if IHA_RegisterEventCb has been called previously
+     * to register a callback function with the embedded FW. It returns silently with
+     * success if used otherwise.\n
+     * It is NOT mandatory to call this API to unregister callbacks, that will get
+     * done internally at sw uninstall stage. One potential use case for the API
+     * would be if client application fails to complete any post-registration
+     * operation i.e. after IHA_RegisterEventCb() has returned successfully, and
+     * needs to re-do the registration from scratch by unregistering the callback
+     * first.\n
+     * This API was added in IPT 2.1, and is only to be used by those apps that do
+     * not need to run on 2011 platforms.
+     *
+     * @param [in]      strAppName: String identifying the embedded app in the
+     *                  chipset.
+     *
+     * @return          void
+     *****************************************************************************/
+    public static native void IHAUnregisterEventCb( String strAppName) throws IhaException;
 
     /*****************************************************************************
      * This function is used retrieve the embedded app's instance id. \n
@@ -742,24 +546,6 @@ public class IHAManager {
      *
      * @return          Instance Id to use for communication with embedded app
      *****************************************************************************/
-    public long IHA_GetAppInstId( String strAppName ) {
-        Log.v(TAG, "IHA_GetAppInstId");
+    public static native long IHA_GetAppInstId( String strAppName ) throws IhaException;
 
-        if (strAppName.length() == 0 || strAppName.length() > MAX_APPNAME_LENGTH) {
-            throw new RuntimeException("Invalid App Name argument");
-        }
-        try {
-
-            return IhaManagerJni.IHA_GetAppInstId( strAppName );
-
-        }
-        catch (IhaException e) {
-            throw new RuntimeException("IHA_GetAppInstId failed", e);
-        }
-    }
-
-    public int IHAGetLastError() {
-        Log.v(TAG, "IHAGetLastError");
-        return 0;
-    }
-}
+} // class IhaJni

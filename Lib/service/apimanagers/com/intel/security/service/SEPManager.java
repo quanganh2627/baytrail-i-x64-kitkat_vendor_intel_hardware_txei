@@ -1,5 +1,5 @@
 /*************************************************************************
- **     Copyright (c) 2012 Intel Corporation. All rights reserved.      **
+ **     Copyright (c) 2015 Intel Corporation. All rights reserved.      **
  **                                                                     **
  ** This Software is licensed pursuant to the terms of the INTEL        **
  ** MOBILE COMPUTING PLATFORM SOFTWARE LIMITED LICENSE AGREEMENT        **

@@ -1,7 +1,7 @@
 /*
 ********************************************************************************
 **    Intel Architecture Group
-**    Copyright (C) 2009-2010 Intel Corporation
+**    Copyright (C) 2015 Intel Corporation
 ********************************************************************************
 **
 **    INTEL CONFIDENTIAL

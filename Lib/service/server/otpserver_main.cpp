@@ -1,5 +1,5 @@
 /*************************************************************************
- **     Copyright (c) 2012 Intel Corporation. All rights reserved.      **
+ **     Copyright (c) 2015 Intel Corporation. All rights reserved.      **
  **                                                                     **
  ** This Software is licensed pursuant to the terms of the INTEL        **
  ** MOBILE COMPUTING PLATFORM SOFTWARE LIMITED LICENSE AGREEMENT        **
@@ -17,27 +17,44 @@
  ** SOFTWARE.                                                           **
  **                                                                     **
  *************************************************************************/
-package com.intel.security.service;
 
-import android.app.Application;
-import android.os.ServiceManager;
-import android.util.Log;
-import com.intel.security.service.ISEPService;
+// This enables ALOGV output
+#define LOG_NDEBUG 0
+#define LOG_TAG "SEPService"
 
-public class SEPServiceApp extends Application {
-    private static final String TAG = "SEPServiceApp";
-    private static final String REMOTE_SERVICE_NAME = ISEPService.class.getName();
-    private ISEPServiceImpl serviceImpl;
+#include <stdlib.h>
+#include <stdio.h>
+#include "utils/RefBase.h"
+#include "utils/Log.h"
+#include "binder/TextOutput.h"
+#include <cutils/log.h>
 
-    public void onCreate() {
-	super.onCreate();
-	this.serviceImpl = new ISEPServiceImpl(this);
-	ServiceManager.addService(REMOTE_SERVICE_NAME, this.serviceImpl);
-	Log.d(TAG, "Registered [" + serviceImpl.getClass().getName() + "] as [" + REMOTE_SERVICE_NAME + "]");
-    }
+#include <binder/IInterface.h>
+#include <binder/IBinder.h>
+#include <binder/ProcessState.h>
+#include <binder/IServiceManager.h>
+#include <binder/IPCThreadState.h>
+#include "debug.h"
 
-    public void onTerminate() {
-	super.onTerminate();
-	Log.d(TAG, "Terminated");
-    }
+using namespace android;
+
+// Interface (our AIDL) - Shared by server and client
+#include "ISecurity.h"
+#include "SecurityService.h"
+
+
+int main() {
+
+    sp<ProcessState> proc(ProcessState::self());
+    sp<IServiceManager> sm = defaultServiceManager();
+    ALOGV("ServiceManager: %p", sm.get());
+
+    SecurityService::instantiate();
+
+    android::ProcessState::self()->startThreadPool();
+    ALOGD("%s  is now ready", SRV_NAME);
+    IPCThreadState::self()->joinThreadPool();
+    ALOGD("service thread joined");
+
+    return EXIT_SUCCESS;
 }
