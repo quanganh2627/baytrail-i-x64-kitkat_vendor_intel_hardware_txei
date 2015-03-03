@@ -758,6 +758,8 @@ status_t BnSecurityService::onTransact(
                 reply->write(pEncToken, expectedDataLen);
             }
 
+            delete[] pEncToken;
+
             return OK;
         }
         break;
@@ -822,9 +824,8 @@ status_t BnSecurityService::onTransact(
                 reply->write(pData, dataLength);
             }
 
-            if (pData != NULL) {
-                delete[] pData;
-            }
+            delete[] pData;
+
             return OK;
         }
         break;
@@ -856,10 +857,7 @@ status_t BnSecurityService::onTransact(
             LOGDBG("result=0x%0X\n", result);
             reply->writeInt32(result);
 
-            if (pData != NULL) {
-                delete[] pData;
-                pData = NULL;
-            }
+            delete[] pData;
 
             return OK;
         }
@@ -891,10 +889,8 @@ status_t BnSecurityService::onTransact(
                 reply->write(pData, dataLength);
             }
 
-            if (pData != NULL) {
-                delete[] pData;
-                pData = NULL;
-            }
+            delete[] pData;
+
             return OK;
         }
         break;
@@ -925,6 +921,7 @@ status_t BnSecurityService::onTransact(
             if (pOutData == NULL) {
                 LOGERR("Unable to allocate %d bytes of memory\n", outDataLength);
                 reply->writeInt32(IHA_RET_E_MEMORY);
+                delete[] pInData;
                 return OK;
             }
 
@@ -937,10 +934,9 @@ status_t BnSecurityService::onTransact(
                 reply->write(pOutData, outDataLength);
             }
 
-            if (pOutData != NULL) {
-                delete[] pOutData;
-                pOutData = NULL;
-            }
+            delete[] pInData;
+            delete[] pOutData;
+
             return OK;
         }
         break;
@@ -971,10 +967,8 @@ status_t BnSecurityService::onTransact(
                 reply->write(pData, dataLength);
             }
 
-            if (pData != NULL) {
-                delete[] pData;
-                pData = NULL;
-            }
+            delete[] pData;
+
             return OK;
         }
         break;
@@ -1040,6 +1034,8 @@ status_t BnSecurityService::onTransact(
             const uint16_t encTokenLength = data.readInt32() & USHRT_MAX;
             if (encTokenLength == 0) {
                 LOGDBG("encTokenLength = %d \n", encTokenLength);
+                reply->writeInt32(IHA_RET_E_INVALID_INPUT);
+                return OK;
             } else {
                 pEncToken = new uint8_t[encTokenLength];
                 if (pEncToken == NULL) {
@@ -1056,12 +1052,14 @@ status_t BnSecurityService::onTransact(
             if (vendorDataLength == 0) {
                 LOGERR("cannot create 0 length array\n");
                 reply->writeInt32(IHA_RET_E_INVALID_INPUT);
+                delete[] pEncToken;
                 return OK;
             }
             uint8_t *pVendorData = new uint8_t[vendorDataLength];
             if (pVendorData == NULL) {
                 LOGERR("Unable to allocate %d bytes of memory\n", vendorDataLength);
                 reply->writeInt32(IHA_RET_E_MEMORY);
+                delete[] pEncToken;
                 return OK;
             }
             data.read(pVendorData, vendorDataLength);
@@ -1071,12 +1069,16 @@ status_t BnSecurityService::onTransact(
             if (OTPLength == 0) {
                 LOGERR("cannot create 0 length array\n");
                 reply->writeInt32(IHA_RET_E_INVALID_INPUT);
+                delete[] pEncToken;
+                delete[] pVendorData;
                 return OK;
             }
             uint8_t *pOTP = new uint8_t[OTPLength];
             if (pOTP == NULL) {
                 LOGERR("Unable to allocate %d bytes of memory\n", OTPLength);
                 reply->writeInt32(IHA_RET_E_MEMORY);
+                delete[] pEncToken;
+                delete[] pVendorData;
                 return OK;
             }
 
@@ -1086,11 +1088,19 @@ status_t BnSecurityService::onTransact(
             uint8_t *pOutEncToken = NULL;
             if (outEncTokenLength == 0) {
                 LOGERR("cannot create 0 length array\n");
+                reply->writeInt32(IHA_RET_E_INVALID_INPUT);
+                delete[] pEncToken;
+                delete[] pVendorData;
+                delete[] pOTP;
+                return OK;
             } else {
                 pOutEncToken = new uint8_t[outEncTokenLength];
-                if (pVendorData == NULL) {
+                if (pOutEncToken == NULL) {
                     LOGERR("Unable to allocate %d bytes of memory\n", outEncTokenLength);
                     reply->writeInt32(IHA_RET_E_MEMORY);
+                    delete[] pEncToken;
+                    delete[] pVendorData;
+                    delete[] pOTP;
                     return OK;
                 }
             }
@@ -1106,24 +1116,14 @@ status_t BnSecurityService::onTransact(
                 reply->write(pOTP, OTPLength);
                 // Write the out encoded token to the parcel
                 reply->writeInt32(outEncTokenLength);
-                if (outEncTokenLength != 0) {
-                    reply->write(pOutEncToken, outEncTokenLength);
-                }
+                reply->write(pOutEncToken, outEncTokenLength);
             }
 
             // Clean up
-            if (pEncToken != NULL) {
-                delete[] pEncToken;
-                pEncToken = NULL;
-            }
-            if (pVendorData != NULL) {
-                delete[] pVendorData;
-                pVendorData = NULL;
-            }
-            if (pEncToken != NULL) {
-                delete[] pEncToken;
-                pEncToken = NULL;
-            }
+            delete[] pEncToken;
+            delete[] pVendorData;
+            delete[] pOTP;
+            delete[] pOutEncToken;
 
             return OK;
         }
@@ -1175,11 +1175,7 @@ status_t BnSecurityService::onTransact(
                 reply->write(pData, dataLength);
             }
 
-            if (pData != NULL) {
-                delete[] pData;
-                pData = NULL;
-            }
-
+            delete[] pData;
 
             return OK;
         }
