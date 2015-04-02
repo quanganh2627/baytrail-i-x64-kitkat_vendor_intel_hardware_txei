@@ -4,6 +4,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libmeimm
 LOCAL_MODULE_TAGS := tests
 LOCAL_MODULE_OWNER := intel
+LOCAL_32_BIT_ONLY := true
 LOCAL_SRC_FILES := meimm.c
 LOCAL_COPY_HEADERS_TO := libmei
 LOCAL_COPY_HEADERS := meimm.h
